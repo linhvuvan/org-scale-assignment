@@ -1,17 +1,15 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { User } from "../../entities/user";
 import { createUser } from "../../business-logic/auth";
 import { bcrypt } from "../../3rd-parties/bcrypt";
 import { jwt } from "../../3rd-parties/jwt";
+import { findUserByEmail, insertUser } from "../../db/users";
 
 const registerSchema = z.object({
   email: z.email(),
   name: z.string().min(1),
   password: z.string().min(8),
 });
-
-const users: User[] = [];
 
 export const register = async (req: Request, res: Response) => {
   const result = registerSchema.safeParse(req.body);
@@ -27,18 +25,20 @@ export const register = async (req: Request, res: Response) => {
 
   const { email, name, password } = result.data;
 
-  if (users.find((u) => u.email === email)) {
+  const existing = await findUserByEmail(email);
+
+  if (existing) {
     res.status(409).json({ message: "email already in use" });
 
     return;
   }
 
   const passwordHash = await bcrypt.hashPassword(password);
-  const user = createUser({ email, name, passwordHash });
-  users.push(user);
+  const newUser = createUser({ id: crypto.randomUUID(), email, name, passwordHash });
+  const inserted = await insertUser(newUser);
 
-  // TODO: omit passwordHash
-  res.status(201).json(user);
+  const { passwordHash: _, ...safeUser } = inserted;
+  res.status(201).json(safeUser);
 };
 
 const loginSchema = z.object({
@@ -59,7 +59,8 @@ export const login = async (req: Request, res: Response) => {
   }
 
   const { email, password } = result.data;
-  const user = users.find((u) => u.email === email);
+
+  const user = await findUserByEmail(email);
 
   if (!user) {
     res.status(401).json({ message: "invalid credentials" });
