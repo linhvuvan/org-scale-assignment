@@ -1,11 +1,11 @@
 import express from "express";
-import healthRouter from "./routes/health.route";
+import { healthRouter } from "./routes/health.route";
+import { authRouter } from "./routes/auth.route";
 
-const app = express();
+export const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(healthRouter);
-
-export default app;
+app.use("/auth", authRouter);
