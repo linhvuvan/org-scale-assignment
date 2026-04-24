@@ -38,7 +38,9 @@ Entry point is `src/index.ts` — it reads config and starts the HTTP listener. 
 - Use `type` (not `interface`) for all type definitions.
 - Entity types live in `src/entities/<entity>.ts`. When a DB insert omits fields set by the DB (e.g. `createdAt` via `defaultNow()`), define a companion insert type there too — e.g. `export type NewUser = Omit<User, "createdAt">`.
 - Business logic goes in `src/business-logic/<resource>.ts` — no Express types, pure functions, easy to unit test. Controllers own HTTP concerns (validation, status codes) and delegate construction/logic to business-logic.
-- Use Zod (`zod` package) for all request body validation via `schema.safeParse(req.body)`.
+- Use Zod (`zod` package) for all request body validation. Validation runs in middleware, not controllers — apply `validateBody(schema)` from `src/middleware/validate.ts` at the route level. Export schemas from the controller file so routes can import them alongside handlers.
+- Controllers type their request body via the `Request` generic: `Request<{}, {}, z.infer<typeof schema>>`. The comment `// Request<RouteParams, ResponseBody, RequestBody>` precedes the function signature.
+- Custom middleware lives in `src/middleware/<name>.ts`.
 - Business logic functions that take multiple params use a single input object and destructure it (e.g. `createUser({ id, email, name, passwordHash })`).
 - All constants live in `src/config/constants.ts`.
 - Third-party library wrappers live in `src/3rd-parties/<lib>.ts`. Each file exports a single named object (matching the lib name) whose methods are the only surface the rest of the code calls — never import the raw library elsewhere. Example: `export const bcrypt = { hashPassword, verifyPassword }`, `export const jwt = { signToken }`, `export const db = drizzle(client, { schema })`.

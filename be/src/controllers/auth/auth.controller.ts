@@ -5,66 +5,54 @@ import { bcrypt } from "../../3rd-parties/bcrypt";
 import { jwt } from "../../3rd-parties/jwt";
 import { findUserByEmail, insertUser } from "../../db/users";
 
-const registerSchema = z.object({
+export const registerSchema = z.object({
   email: z.email(),
   name: z.string().min(1),
   password: z.string().min(8),
 });
 
-export const register = async (req: Request, res: Response) => {
-  const result = registerSchema.safeParse(req.body);
-
-  if (!result.success) {
-    res.status(400).json({
-      message: "validation error",
-      errors: z.flattenError(result.error),
-    });
-
-    return;
-  }
-
-  const { email, name, password } = result.data;
+// Request<RouteParams, ResponseBody, RequestBody>
+export const register = async (
+  req: Request<{}, {}, z.infer<typeof registerSchema>>,
+  res: Response,
+) => {
+  const { email, name, password } = req.body;
 
   const existing = await findUserByEmail(email);
 
   if (existing) {
     res.status(409).json({ message: "email already in use" });
-
     return;
   }
 
   const passwordHash = await bcrypt.hashPassword(password);
-  const newUser = createUser({ id: crypto.randomUUID(), email, name, passwordHash });
+  const newUser = createUser({
+    id: crypto.randomUUID(),
+    email,
+    name,
+    passwordHash,
+  });
   const inserted = await insertUser(newUser);
 
   const { passwordHash: _, ...safeUser } = inserted;
   res.status(201).json(safeUser);
 };
 
-const loginSchema = z.object({
+export const loginSchema = z.object({
   email: z.email(),
   password: z.string().min(1),
 });
 
-export const login = async (req: Request, res: Response) => {
-  const result = loginSchema.safeParse(req.body);
-
-  if (!result.success) {
-    res.status(400).json({
-      message: "validation error",
-      errors: z.flattenError(result.error),
-    });
-
-    return;
-  }
-
-  const { email, password } = result.data;
+export const login = async (
+  req: Request<{}, {}, z.infer<typeof loginSchema>>,
+  res: Response,
+) => {
+  const { email, password } = req.body;
 
   const user = await findUserByEmail(email);
 
   if (!user) {
     res.status(401).json({ message: "invalid credentials" });
-
     return;
   }
 
@@ -72,7 +60,6 @@ export const login = async (req: Request, res: Response) => {
 
   if (!valid) {
     res.status(401).json({ message: "invalid credentials" });
-
     return;
   }
 
