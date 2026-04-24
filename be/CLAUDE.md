@@ -27,3 +27,6 @@ Entry point is `src/index.ts` — it reads config and starts the HTTP listener. 
 - Entity types live in `src/entities/<entity>.ts`.
 - Business logic goes in `src/business-logic/<resource>.ts` — no Express types, pure functions, easy to unit test. Controllers own HTTP concerns (validation, status codes, in-memory store) and delegate construction/logic to business-logic.
 - Use Zod (`zod` package) for all request body validation via `schema.safeParse(req.body)`.
+- Business logic functions that take multiple params use a single input object and destructure it (e.g. `createUser({ email, name, passwordHash })`).
+- All constants live in `src/config/constants.ts`.
+- Third-party library wrappers live in `src/3rd-parties/<lib>.ts`. Each file exports a single named object (matching the lib name) whose methods are the only surface the rest of the code calls — never import the raw library elsewhere. Example: `export const bcrypt = { hashPassword, verifyPassword }`, `export const jwt = { signToken }`.
