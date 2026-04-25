@@ -14,5 +14,7 @@ export default defineConfig({
     pool: "forks",
     /* allow up to 15s per test — DB operations need headroom */
     testTimeout: 15000,
+    /* run test files sequentially — all files share the same DB */
+    fileParallelism: false,
   },
 });

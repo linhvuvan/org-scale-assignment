@@ -1,29 +1,9 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import request from "supertest";
 import { app } from "../../app";
-import { runMigrations, truncateTables } from "../helpers/db";
+import { runMigrations, truncateTables, seedUser, seedCampaign } from "../helpers/db";
 import { makeAuthCookie } from "../helpers/auth";
-import { insertUser } from "../../db/users";
-import { insertCampaign, getCampaignById } from "../../db/campaigns";
-import { CampaignStatus } from "../../entities/campaign";
-
-const seedUser = async () =>
-  insertUser({
-    id: crypto.randomUUID(),
-    email: "test@example.com",
-    name: "Test User",
-    passwordHash: "irrelevant",
-  });
-
-const seedCampaign = async (createdBy: string, status: CampaignStatus = "draft") =>
-  insertCampaign({
-    id: crypto.randomUUID(),
-    name: "Test Campaign",
-    subject: "Hello",
-    body: "Body",
-    status,
-    createdBy,
-  });
+import { getCampaignById } from "../../db/campaigns";
 
 describe("DELETE /campaigns/:id", () => {
   beforeAll(async () => {
