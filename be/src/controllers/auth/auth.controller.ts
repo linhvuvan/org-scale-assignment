@@ -4,6 +4,8 @@ import { createUser } from "../../business-logic/auth";
 import { bcrypt } from "../../3rd-parties/bcrypt";
 import { jwt } from "../../3rd-parties/jwt";
 import { findUserByEmail, insertUser } from "../../db/users";
+import { env } from "../../config/env";
+import { AUTH_COOKIE, SESSION_MAX_AGE_MS } from "../../config/constants";
 
 export const registerSchema = z.object({
   email: z.email(),
@@ -65,5 +67,18 @@ export const login = async (
 
   const token = jwt.signToken({ sub: user.id, email: user.email });
 
-  res.status(200).json({ token });
+  /*
+   * httpOnly: JS cannot read via document.cookie (XSS protection)
+   * secure: HTTPS-only in prod; omitted in dev since localhost uses HTTP
+   * sameSite lax: sent on same-site requests + top-level navigations, blocked on cross-origin fetch
+   */
+  res
+    .cookie(AUTH_COOKIE, token, {
+      httpOnly: true,
+      secure: env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: SESSION_MAX_AGE_MS,
+    })
+    .status(200)
+    .json({ message: "ok" });
 };
