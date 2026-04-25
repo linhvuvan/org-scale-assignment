@@ -8,4 +8,6 @@ type TokenPayload = { sub: string; email: string };
 export const jwt = {
   signToken: (payload: TokenPayload): string =>
     _jwt.sign(payload, env.JWT_SECRET, { expiresIn: SESSION_DURATION }),
+  verifyToken: (token: string): TokenPayload =>
+    _jwt.verify(token, env.JWT_SECRET) as TokenPayload,
 };
