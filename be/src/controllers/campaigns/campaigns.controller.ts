@@ -1,8 +1,5 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { jwt } from "../../3rd-parties/jwt";
-import { AUTH_COOKIE } from "../../config/constants";
-import { safeTry } from "../../utils/safeTry";
 import { pipe } from "../../utils/pipe";
 import { bodyRequired } from "../../middleware/validate";
 import { authRequired } from "../../middleware/auth";
@@ -13,7 +10,6 @@ import {
 import { createCampaign } from "../../business-logic/campaigns";
 import {
   deleteCampaignById,
-  getCampaignById,
   getCampaigns,
   insertCampaign,
   updateCampaignById,
@@ -28,50 +24,38 @@ export const createCampaignSchema = z.object({
 });
 
 export const createCampaignHandler = async (
-  req: Request<{}, {}, z.infer<typeof createCampaignSchema>>,
+  req: Request,
   res: Response,
 ): Promise<void> => {
-  const token: string | undefined = req.cookies[AUTH_COOKIE];
-  if (!token) {
-    res.status(401).json({ message: "unauthorized" });
-    return;
-  }
-  const [err, payload] = safeTry(() => jwt.verifyToken(token));
-  if (err) {
-    res.status(401).json({ message: "unauthorized" });
-    return;
-  }
-  const user = { id: payload.sub, email: payload.email };
-  const { body } = req;
-  const campaign = createCampaign({
-    id: crypto.randomUUID(),
-    name: body.name,
-    subject: body.subject,
-    body: body.body,
-    status: body.status,
-    scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
-    createdBy: user.id,
-  });
-  const inserted = await insertCampaign(campaign);
-  res.status(201).json(inserted);
+  await pipe(
+    req,
+    res,
+    authRequired,
+    bodyRequired(createCampaignSchema),
+    async (_, __, ctx) => {
+      const campaign = createCampaign({
+        id: crypto.randomUUID(),
+        name: ctx.body.name,
+        subject: ctx.body.subject,
+        body: ctx.body.body,
+        status: ctx.body.status,
+        scheduledAt: ctx.body.scheduledAt ? new Date(ctx.body.scheduledAt) : null,
+        createdBy: ctx.user.id,
+      });
+      const inserted = await insertCampaign(campaign);
+      res.status(201).json(inserted);
+    },
+  );
 };
 
 export const getCampaignsHandler = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  const token: string | undefined = req.cookies[AUTH_COOKIE];
-  if (!token) {
-    res.status(401).json({ message: "unauthorized" });
-    return;
-  }
-  const [err] = safeTry(() => jwt.verifyToken(token));
-  if (err) {
-    res.status(401).json({ message: "unauthorized" });
-    return;
-  }
-  const campaigns = await getCampaigns();
-  res.status(200).json(campaigns);
+  await pipe(req, res, authRequired, async () => {
+    const campaigns = await getCampaigns();
+    res.status(200).json(campaigns);
+  });
 };
 
 export const updateCampaignSchema = z.object({
@@ -92,7 +76,7 @@ export const updateCampaignHandler = async (
     bodyRequired(updateCampaignSchema),
     campaignRequired(req.params.id),
     draftCampaignRequired,
-    async (_req, _res, ctx) => {
+    async (_, __, ctx) => {
       const updated = await updateCampaignById(ctx.campaign.id, ctx.body);
       res.status(200).json(updated);
     },
@@ -103,26 +87,15 @@ export const deleteCampaignHandler = async (
   req: Request<{ id: string }>,
   res: Response,
 ): Promise<void> => {
-  const token: string | undefined = req.cookies[AUTH_COOKIE];
-  if (!token) {
-    res.status(401).json({ message: "unauthorized" });
-    return;
-  }
-  const [err] = safeTry(() => jwt.verifyToken(token));
-  if (err) {
-    res.status(401).json({ message: "unauthorized" });
-    return;
-  }
-  const { id } = req.params;
-  const campaign = await getCampaignById(id);
-  if (!campaign) {
-    res.status(404).json({ message: "campaign not found" });
-    return;
-  }
-  if (campaign.status !== "draft") {
-    res.status(409).json({ message: "only draft campaigns can be deleted" });
-    return;
-  }
-  await deleteCampaignById(id);
-  res.status(204).send();
+  await pipe(
+    req,
+    res,
+    authRequired,
+    campaignRequired(req.params.id),
+    draftCampaignRequired,
+    async (_, __, ctx) => {
+      await deleteCampaignById(ctx.campaign.id);
+      res.status(204).send();
+    },
+  );
 };

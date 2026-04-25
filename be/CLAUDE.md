@@ -38,9 +38,12 @@ Entry point is `src/index.ts` — it reads config and starts the HTTP listener. 
 - Use `type` (not `interface`) for all type definitions.
 - Entity types live in `src/entities/<entity>.ts`. When a DB insert omits fields set by the DB (e.g. `createdAt` via `defaultNow()`), define a companion insert type there too — e.g. `export type NewUser = Omit<User, "createdAt">`.
 - Business logic goes in `src/business-logic/<resource>.ts` — no Express types, pure functions, easy to unit test. Controllers own HTTP concerns (validation, status codes) and delegate construction/logic to business-logic.
-- Use Zod (`zod` package) for all request body validation. Validation runs in middleware, not controllers — apply `validateBody(schema)` from `src/middleware/validate.ts` at the route level. Export schemas from the controller file so routes can import them alongside handlers.
-- Controllers type their request body via the `Request` generic: `Request<{}, {}, z.infer<typeof schema>>`. Destructure request data with `const { body } = req`.
-- Authentication is handled inside controllers, not via middleware. Read `req.cookies[AUTH_COOKIE]`, verify with `safeTry(() => jwt.verifyToken(token))` from `src/utils/safeTry.ts`, and return 401 on missing token or verify error. Extract `user` from the payload directly in the controller.
+- Use Zod (`zod` package) for all request body validation. Export schemas from the controller file.
+- All handlers use `pipe()` from `src/utils/pipe.ts` with composable `Step` functions — never inline auth or validation boilerplate. `pipe()` chains steps sequentially, accumulates context, and short-circuits on `null`. Steps live in `src/middleware/<name>.ts`.
+- Body validation goes inside `pipe()` via `bodyRequired(schema)` from `src/middleware/validate.ts`, not at the route level via `validateBody`. Access the validated body as `ctx.body` (typed by Zod inference), not `req.body`. Do not use the `Request` generic to type the body.
+- Authentication is a `pipe()` step: add `authRequired` from `src/middleware/auth.ts` as the first step. It reads the cookie, verifies the JWT, and puts `{ user: { id, email } }` in ctx, or returns 401. Never inline the cookie/JWT check in a controller.
+- Resource guards (e.g. `campaignRequired(id)`, `draftCampaignRequired`, `emailAvailableRequired`, `userRequired`) are `Step` functions in `src/middleware/`. Each checks a condition, short-circuits with an error response, or adds data to ctx.
+- Terminal functions in `pipe()` always close over the outer handler's `res` — do not use the terminal's own `req`/`res` params. Omit trailing unused params; use `_` prefix for non-trailing unused ones: `async (_, __, ctx) => {}` when ctx is needed, `async () => {}` when nothing is needed.
 - Shared utility types live in `src/types/<name>.ts`. Shared utility functions live in `src/utils/<name>.ts` (e.g. `safeTry` in `src/utils/safeTry.ts` wraps a throwing thunk into `[Error, null] | [null, T]`).
 - Use `crypto.randomUUID()` (built-in Node.js) to generate entity IDs — no extra package needed.
 - Custom middleware lives in `src/middleware/<name>.ts`.
