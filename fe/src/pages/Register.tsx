@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import useSWRMutation from "swr/mutation";
+import { API_URL } from "../config/env";
 
 type RegisterArgs = { name: string; email: string; password: string };
 
@@ -27,7 +28,7 @@ export default function Register() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const { trigger, isMutating } = useSWRMutation(
-    "http://localhost:4000/auth/register",
+    `${API_URL}/auth/register`,
     registerFetcher,
   );
 

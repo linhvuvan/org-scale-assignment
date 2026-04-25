@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import useSWRMutation from "swr/mutation";
+import { API_URL } from "../config/env";
 
 type LoginArgs = { email: string; password: string };
 
@@ -24,7 +25,7 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState("");
 
   const { trigger, isMutating } = useSWRMutation(
-    "http://localhost:4000/auth/login",
+    `${API_URL}/auth/login`,
     loginFetcher,
   );
 
