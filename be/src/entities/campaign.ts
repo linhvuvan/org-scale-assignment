@@ -16,6 +16,11 @@ export type Campaign = {
 
 export type CampaignWithStats = Campaign & { stats: CampaignStats };
 
-export type NewCampaign = Omit<Campaign, "createdAt" | "updatedAt">;
+export type NewCampaign = Omit<
+  Campaign,
+  "createdAt" | "updatedAt" | "scheduledAt"
+>;
 
-export type UpdateCampaign = Partial<Pick<Campaign, "name" | "subject" | "body" | "status">>;
+export type UpdateCampaign = Partial<
+  Pick<Campaign, "name" | "subject" | "body" | "status">
+>;

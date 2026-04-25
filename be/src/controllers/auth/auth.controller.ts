@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { createUser } from "../../business-logic/auth";
 import { bcrypt } from "../../3rd-parties/bcrypt";
 import { jwt } from "../../3rd-parties/jwt";
 import { insertUser } from "../../db/users";
@@ -8,7 +7,11 @@ import { env } from "../../config/env";
 import { AUTH_COOKIE, SESSION_MAX_AGE_MS } from "../../config/constants";
 import { pipe } from "../../utils/pipe";
 import { bodyRequired } from "../../middleware/validate";
-import { emailAvailableRequired, userRequired, passwordRequired } from "../../middleware/user";
+import {
+  emailAvailableRequired,
+  userRequired,
+  passwordRequired,
+} from "../../middleware/user";
 
 const registerSchema = z.object({
   email: z.email(),
@@ -24,14 +27,15 @@ export const register = async (req: Request, res: Response) => {
     emailAvailableRequired,
     async ({ ctx }) => {
       const passwordHash = await bcrypt.hashPassword(ctx.body.password);
-      const newUser = createUser({
+      const inserted = await insertUser({
         id: crypto.randomUUID(),
         email: ctx.body.email,
         name: ctx.body.name,
         passwordHash,
       });
-      const inserted = await insertUser(newUser);
+
       const { passwordHash: _pw, ...safeUser } = inserted;
+
       res.status(201).json(safeUser);
     },
   );

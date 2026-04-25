@@ -8,7 +8,7 @@ import {
   draftCampaignRequired,
   scheduledCampaignRequired,
 } from "../../middleware/campaign";
-import { createCampaign, computeCampaignStats } from "../../business-logic/campaigns";
+import { computeCampaignStats } from "../../business-logic/campaigns";
 import {
   deleteCampaignById,
   getCampaignStats,
@@ -23,8 +23,6 @@ const createCampaignSchema = z.object({
   name: z.string().min(1),
   subject: z.string().min(1),
   body: z.string().min(1),
-  status: z.enum(["draft", "scheduled", "sent"]).default("draft"),
-  scheduledAt: z.iso.datetime().optional(),
 });
 
 export const createCampaignHandler = async (
@@ -37,19 +35,14 @@ export const createCampaignHandler = async (
     authRequired,
     bodyRequired(createCampaignSchema),
     async ({ ctx }) => {
-      const campaign = createCampaign({
+      const inserted = await insertCampaign({
         id: crypto.randomUUID(),
         name: ctx.body.name,
         subject: ctx.body.subject,
         body: ctx.body.body,
-        status: ctx.body.status,
-        scheduledAt: ctx.body.scheduledAt
-          ? new Date(ctx.body.scheduledAt)
-          : null,
+        status: "draft",
         createdBy: ctx.user.id,
       });
-
-      const inserted = await insertCampaign(campaign);
 
       res.status(201).json(inserted);
     },

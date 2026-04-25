@@ -1,7 +1,4 @@
-import { NewCampaign } from "../entities/campaign";
 import { CampaignStats } from "../entities/campaignStats";
-
-export const createCampaign = (input: NewCampaign): NewCampaign => input;
 
 export const computeCampaignStats = (
   payload: Omit<CampaignStats, "openRate" | "sendRate">,
