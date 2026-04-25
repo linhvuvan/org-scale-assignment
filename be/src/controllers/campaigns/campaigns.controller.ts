@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { pipe } from "../../utils/pipe";
-import { bodyRequired } from "../../middleware/validate";
+import { bodyRequired, queryRequired } from "../../middleware/validate";
 import { authRequired } from "../../middleware/auth";
 import {
   campaignRequired,
@@ -66,14 +66,29 @@ export const getCampaignHandler = async (
   );
 };
 
+const getCampaignsSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(20),
+});
+
 export const getCampaignsHandler = async (
   req: Request,
   res: Response,
 ): Promise<void> => {
-  await pipe(req, res, authRequired, async () => {
-    const campaigns = await getCampaigns();
-    res.status(200).json(campaigns);
-  });
+  await pipe(
+    req,
+    res,
+    authRequired,
+    queryRequired(getCampaignsSchema),
+    async ({ ctx }) => {
+      const { page, limit } = ctx.query;
+      const offset = (page - 1) * limit;
+
+      const { data, total } = await getCampaigns({ limit, offset });
+
+      res.status(200).json({ data, total, page, limit });
+    },
+  );
 };
 
 const updateCampaignSchema = z.object({

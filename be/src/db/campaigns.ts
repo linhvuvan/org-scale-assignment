@@ -8,8 +8,24 @@ export const insertCampaign = async (campaign: NewCampaign): Promise<Campaign> =
   return inserted;
 };
 
-export const getCampaigns = async (): Promise<Campaign[]> => {
-  return db.select().from(campaignsTable).orderBy(desc(campaignsTable.createdAt));
+export const getCampaigns = async (params: {
+  limit: number;
+  offset: number;
+}): Promise<{ data: Campaign[]; total: number }> => {
+  const { limit, offset } = params;
+
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(campaignsTable);
+
+  const data = await db
+    .select()
+    .from(campaignsTable)
+    .orderBy(desc(campaignsTable.createdAt))
+    .limit(limit)
+    .offset(offset);
+
+  return { data, total };
 };
 
 export const getCampaignById = async (id: string): Promise<Campaign | undefined> => {
