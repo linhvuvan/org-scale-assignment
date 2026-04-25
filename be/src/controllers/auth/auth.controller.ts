@@ -8,9 +8,9 @@ import { env } from "../../config/env";
 import { AUTH_COOKIE, SESSION_MAX_AGE_MS } from "../../config/constants";
 import { pipe } from "../../utils/pipe";
 import { bodyRequired } from "../../middleware/validate";
-import { emailAvailableRequired, userRequired } from "../../middleware/user";
+import { emailAvailableRequired, userRequired, passwordRequired } from "../../middleware/user";
 
-export const registerSchema = z.object({
+const registerSchema = z.object({
   email: z.email(),
   name: z.string().min(1),
   password: z.string().min(8),
@@ -22,7 +22,7 @@ export const register = async (req: Request, res: Response) => {
     res,
     bodyRequired(registerSchema),
     emailAvailableRequired,
-    async (_, __, ctx) => {
+    async ({ ctx }) => {
       const passwordHash = await bcrypt.hashPassword(ctx.body.password);
       const newUser = createUser({
         id: crypto.randomUUID(),
@@ -37,7 +37,7 @@ export const register = async (req: Request, res: Response) => {
   );
 };
 
-export const loginSchema = z.object({
+const loginSchema = z.object({
   email: z.email(),
   password: z.string().min(1),
 });
@@ -48,12 +48,8 @@ export const login = async (req: Request, res: Response) => {
     res,
     bodyRequired(loginSchema),
     userRequired,
-    async (_, __, ctx) => {
-      const valid = await bcrypt.verifyPassword(ctx.body.password, ctx.user.passwordHash);
-      if (!valid) {
-        res.status(401).json({ message: "invalid credentials" });
-        return;
-      }
+    passwordRequired,
+    async ({ ctx }) => {
       const token = jwt.signToken({ sub: ctx.user.id, email: ctx.user.email });
       res
         .cookie(AUTH_COOKIE, token, {

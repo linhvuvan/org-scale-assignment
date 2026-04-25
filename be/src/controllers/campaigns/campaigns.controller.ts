@@ -15,7 +15,7 @@ import {
   updateCampaignById,
 } from "../../db/campaigns";
 
-export const createCampaignSchema = z.object({
+const createCampaignSchema = z.object({
   name: z.string().min(1),
   subject: z.string().min(1),
   body: z.string().min(1),
@@ -32,14 +32,16 @@ export const createCampaignHandler = async (
     res,
     authRequired,
     bodyRequired(createCampaignSchema),
-    async (_, __, ctx) => {
+    async ({ ctx }) => {
       const campaign = createCampaign({
         id: crypto.randomUUID(),
         name: ctx.body.name,
         subject: ctx.body.subject,
         body: ctx.body.body,
         status: ctx.body.status,
-        scheduledAt: ctx.body.scheduledAt ? new Date(ctx.body.scheduledAt) : null,
+        scheduledAt: ctx.body.scheduledAt
+          ? new Date(ctx.body.scheduledAt)
+          : null,
         createdBy: ctx.user.id,
       });
       const inserted = await insertCampaign(campaign);
@@ -58,7 +60,7 @@ export const getCampaignsHandler = async (
   });
 };
 
-export const updateCampaignSchema = z.object({
+const updateCampaignSchema = z.object({
   name: z.string().min(1).optional(),
   subject: z.string().min(1).optional(),
   body: z.string().min(1).optional(),
@@ -76,7 +78,7 @@ export const updateCampaignHandler = async (
     bodyRequired(updateCampaignSchema),
     campaignRequired(req.params.id),
     draftCampaignRequired,
-    async (_, __, ctx) => {
+    async ({ ctx }) => {
       const updated = await updateCampaignById(ctx.campaign.id, ctx.body);
       res.status(200).json(updated);
     },
@@ -93,7 +95,7 @@ export const deleteCampaignHandler = async (
     authRequired,
     campaignRequired(req.params.id),
     draftCampaignRequired,
-    async (_, __, ctx) => {
+    async ({ ctx }) => {
       await deleteCampaignById(ctx.campaign.id);
       res.status(204).send();
     },

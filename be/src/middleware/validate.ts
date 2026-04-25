@@ -4,7 +4,7 @@ import { Step } from "../utils/pipe";
 
 export const bodyRequired =
   <T extends Record<string, unknown>>(schema: ZodType<T>): Step<{}, { body: T }> =>
-  async (req, res, _ctx) => {
+  async ({ req, res }) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
       res.status(400).json({ message: "validation error", errors: z.flattenError(result.error) });

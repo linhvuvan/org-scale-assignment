@@ -1,9 +1,8 @@
-import { Request, Response } from "express";
 import { Step } from "../utils/pipe";
 import { jwt } from "../3rd-parties/jwt";
 import { AUTH_COOKIE } from "../config/constants";
 
-export const authRequired: Step<{}, { user: { id: string; email: string } }> = async (req, res, _ctx) => {
+export const authRequired: Step<{}, { user: { id: string; email: string } }> = async ({ req, res }) => {
   const token: string | undefined = req.cookies[AUTH_COOKIE];
   if (!token) {
     res.status(401).json({ message: "unauthorized" });
