@@ -38,3 +38,12 @@ export const scheduleCampaignById = async (id: string, scheduledAt: Date): Promi
     .returning();
   return updated;
 };
+
+export const sendCampaignById = async (id: string): Promise<Campaign> => {
+  const [updated] = await db
+    .update(campaignsTable)
+    .set({ status: "sent", updatedAt: new Date() })
+    .where(eq(campaignsTable.id, id))
+    .returning();
+  return updated;
+};

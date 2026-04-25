@@ -19,3 +19,11 @@ export const draftCampaignRequired: Step<{ campaign: Campaign }, {}> = async ({ 
   }
   return {};
 };
+
+export const scheduledCampaignRequired: Step<{ campaign: Campaign }, {}> = async ({ res, ctx }) => {
+  if (ctx.campaign.status !== "scheduled") {
+    res.status(409).json({ message: "only scheduled campaigns can be sent" });
+    return null;
+  }
+  return {};
+};

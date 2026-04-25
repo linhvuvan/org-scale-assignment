@@ -6,6 +6,7 @@ import { authRequired } from "../../middleware/auth";
 import {
   campaignRequired,
   draftCampaignRequired,
+  scheduledCampaignRequired,
 } from "../../middleware/campaign";
 import { createCampaign } from "../../business-logic/campaigns";
 import {
@@ -13,8 +14,10 @@ import {
   getCampaigns,
   insertCampaign,
   scheduleCampaignById,
+  sendCampaignById,
   updateCampaignById,
 } from "../../db/campaigns";
+import { sendCampaignRecipientsByCampaignId } from "../../db/campaignRecipients";
 
 const createCampaignSchema = z.object({
   name: z.string().min(1),
@@ -129,6 +132,25 @@ export const scheduleCampaignHandler = async (
         ctx.campaign.id,
         new Date(ctx.body.scheduledAt),
       );
+
+      res.status(200).json(updated);
+    },
+  );
+};
+
+export const sendCampaignHandler = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  await pipe(
+    req,
+    res,
+    authRequired,
+    campaignRequired(req.params.id),
+    scheduledCampaignRequired,
+    async ({ ctx }) => {
+      await sendCampaignRecipientsByCampaignId(ctx.campaign.id);
+      const updated = await sendCampaignById(ctx.campaign.id);
 
       res.status(200).json(updated);
     },
