@@ -14,10 +14,9 @@ import {
   getCampaigns,
   insertCampaign,
   scheduleCampaignById,
-  sendCampaignById,
+  sendCampaignWithRecipients,
   updateCampaignById,
 } from "../../db/campaigns";
-import { sendCampaignRecipientsByCampaignId } from "../../db/campaignRecipients";
 
 const createCampaignSchema = z.object({
   name: z.string().min(1),
@@ -149,8 +148,7 @@ export const sendCampaignHandler = async (
     campaignRequired(req.params.id),
     scheduledCampaignRequired,
     async ({ ctx }) => {
-      await sendCampaignRecipientsByCampaignId(ctx.campaign.id);
-      const updated = await sendCampaignById(ctx.campaign.id);
+      const updated = await sendCampaignWithRecipients(ctx.campaign.id);
 
       res.status(200).json(updated);
     },

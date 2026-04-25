@@ -1,6 +1,6 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "../3rd-parties/drizzle";
-import { campaignsTable } from "./schema";
+import { campaignRecipientsTable, campaignsTable } from "./schema";
 import { Campaign, NewCampaign, UpdateCampaign } from "../entities/campaign";
 
 export const insertCampaign = async (campaign: NewCampaign): Promise<Campaign> => {
@@ -39,11 +39,19 @@ export const scheduleCampaignById = async (id: string, scheduledAt: Date): Promi
   return updated;
 };
 
-export const sendCampaignById = async (id: string): Promise<Campaign> => {
-  const [updated] = await db
-    .update(campaignsTable)
-    .set({ status: "sent", updatedAt: new Date() })
-    .where(eq(campaignsTable.id, id))
-    .returning();
-  return updated;
+export const sendCampaignWithRecipients = async (id: string): Promise<Campaign> => {
+  return db.transaction(async (tx) => {
+    await tx
+      .update(campaignRecipientsTable)
+      .set({ status: "sent", sentAt: new Date() })
+      .where(eq(campaignRecipientsTable.campaignId, id));
+
+    const [updated] = await tx
+      .update(campaignsTable)
+      .set({ status: "sent", updatedAt: new Date() })
+      .where(eq(campaignsTable.id, id))
+      .returning();
+
+    return updated;
+  });
 };
