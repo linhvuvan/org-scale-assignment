@@ -4,7 +4,7 @@ import { jwt } from "../../3rd-parties/jwt";
 import { AUTH_COOKIE } from "../../config/constants";
 import { safeTry } from "../../utils/safeTry";
 import { createCampaign } from "../../business-logic/campaigns";
-import { deleteCampaignById, getCampaignById, getCampaigns, insertCampaign } from "../../db/campaigns";
+import { deleteCampaignById, getCampaignById, getCampaigns, insertCampaign, updateCampaignById } from "../../db/campaigns";
 
 export const createCampaignSchema = z.object({
   name: z.string().min(1),
@@ -59,6 +59,42 @@ export const getCampaignsHandler = async (
   }
   const campaigns = await getCampaigns();
   res.status(200).json(campaigns);
+};
+
+export const updateCampaignSchema = z.object({
+  name: z.string().min(1).optional(),
+  subject: z.string().min(1).optional(),
+  body: z.string().min(1).optional(),
+  status: z.enum(["draft", "scheduled", "sent"]).optional(),
+});
+
+export const updateCampaignHandler = async (
+  req: Request<{ id: string }, {}, z.infer<typeof updateCampaignSchema>>,
+  res: Response,
+): Promise<void> => {
+  const token: string | undefined = req.cookies[AUTH_COOKIE];
+  if (!token) {
+    res.status(401).json({ message: "unauthorized" });
+    return;
+  }
+  const [err] = safeTry(() => jwt.verifyToken(token));
+  if (err) {
+    res.status(401).json({ message: "unauthorized" });
+    return;
+  }
+  const { id } = req.params;
+  const campaign = await getCampaignById(id);
+  if (!campaign) {
+    res.status(404).json({ message: "campaign not found" });
+    return;
+  }
+  if (campaign.status !== "draft") {
+    res.status(409).json({ message: "only draft campaigns can be updated" });
+    return;
+  }
+  const { body } = req;
+  const updated = await updateCampaignById(id, body);
+  res.status(200).json(updated);
 };
 
 export const deleteCampaignHandler = async (

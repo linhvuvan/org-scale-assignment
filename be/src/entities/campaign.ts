@@ -13,3 +13,5 @@ export type Campaign = {
 };
 
 export type NewCampaign = Omit<Campaign, "createdAt" | "updatedAt">;
+
+export type UpdateCampaign = Partial<Pick<Campaign, "name" | "subject" | "body" | "status">>;

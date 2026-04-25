@@ -1,7 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import { db } from "../3rd-parties/drizzle";
 import { campaignsTable } from "./schema";
-import { Campaign, NewCampaign } from "../entities/campaign";
+import { Campaign, NewCampaign, UpdateCampaign } from "../entities/campaign";
 
 export const insertCampaign = async (campaign: NewCampaign): Promise<Campaign> => {
   const [inserted] = await db.insert(campaignsTable).values(campaign).returning();
@@ -19,4 +19,13 @@ export const getCampaignById = async (id: string): Promise<Campaign | undefined>
 
 export const deleteCampaignById = async (id: string): Promise<void> => {
   await db.delete(campaignsTable).where(eq(campaignsTable.id, id));
+};
+
+export const updateCampaignById = async (id: string, updates: UpdateCampaign): Promise<Campaign> => {
+  const [updated] = await db
+    .update(campaignsTable)
+    .set({ ...updates, updatedAt: new Date() })
+    .where(eq(campaignsTable.id, id))
+    .returning();
+  return updated;
 };
