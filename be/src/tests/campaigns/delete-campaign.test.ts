@@ -1,7 +1,12 @@
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import request from "supertest";
 import { app } from "../../app";
-import { runMigrations, truncateTables, seedUser, seedCampaign } from "../helpers/db";
+import {
+  runMigrations,
+  truncateTables,
+  seedUser,
+  seedCampaign,
+} from "../helpers/db";
 import { makeAuthCookie } from "../helpers/auth";
 import { getCampaignById } from "../../db/campaigns";
 
