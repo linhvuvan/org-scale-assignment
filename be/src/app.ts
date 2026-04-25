@@ -1,5 +1,6 @@
 import express from "express";
 import cookieParser from "cookie-parser";
+import { cors } from "./3rd-parties/cors";
 import { morgan } from "./3rd-parties/morgan";
 import { healthRouter } from "./routes/health.route";
 import { authRouter } from "./routes/auth.route";
@@ -8,6 +9,7 @@ import { errorHandler } from "./middleware/errorHandler";
 
 export const app = express();
 
+app.use(cors);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

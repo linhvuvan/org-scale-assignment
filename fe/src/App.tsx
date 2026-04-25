@@ -1,3 +1,16 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Register from './pages/Register';
+import Login from './pages/Login';
+
 export default function App() {
-  return <h1 className="text-red-400">Hello World</h1>;
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        {/* catch-all: redirects / and any unknown path to /register */}
+        <Route path="*" element={<Navigate to="/register" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
