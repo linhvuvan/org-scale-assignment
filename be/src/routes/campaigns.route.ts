@@ -5,7 +5,6 @@ import {
   deleteCampaignHandler,
   getCampaignsHandler,
   updateCampaignHandler,
-  updateCampaignSchema,
 } from "../controllers/campaigns/campaigns.controller";
 import { validateBody } from "../middleware/validate";
 
@@ -19,10 +18,6 @@ campaignsRouter.post(
   createCampaignHandler,
 );
 
-campaignsRouter.patch(
-  "/:id",
-  validateBody(updateCampaignSchema),
-  updateCampaignHandler,
-);
+campaignsRouter.patch("/:id", updateCampaignHandler);
 
 campaignsRouter.delete("/:id", deleteCampaignHandler);
