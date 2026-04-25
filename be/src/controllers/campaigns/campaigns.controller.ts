@@ -12,6 +12,7 @@ import {
   deleteCampaignById,
   getCampaigns,
   insertCampaign,
+  scheduleCampaignById,
   updateCampaignById,
 } from "../../db/campaigns";
 
@@ -44,7 +45,9 @@ export const createCampaignHandler = async (
           : null,
         createdBy: ctx.user.id,
       });
+
       const inserted = await insertCampaign(campaign);
+
       res.status(201).json(inserted);
     },
   );
@@ -80,6 +83,7 @@ export const updateCampaignHandler = async (
     draftCampaignRequired,
     async ({ ctx }) => {
       const updated = await updateCampaignById(ctx.campaign.id, ctx.body);
+
       res.status(200).json(updated);
     },
   );
@@ -97,7 +101,36 @@ export const deleteCampaignHandler = async (
     draftCampaignRequired,
     async ({ ctx }) => {
       await deleteCampaignById(ctx.campaign.id);
+
       res.status(204).send();
+    },
+  );
+};
+
+const scheduleCampaignSchema = z.object({
+  scheduledAt: z.iso.datetime().refine((val) => new Date(val) > new Date(), {
+    message: "scheduledAt must be in the future",
+  }),
+});
+
+export const scheduleCampaignHandler = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  await pipe(
+    req,
+    res,
+    authRequired,
+    bodyRequired(scheduleCampaignSchema),
+    campaignRequired(req.params.id),
+    draftCampaignRequired,
+    async ({ ctx }) => {
+      const updated = await scheduleCampaignById(
+        ctx.campaign.id,
+        new Date(ctx.body.scheduledAt),
+      );
+
+      res.status(200).json(updated);
     },
   );
 };

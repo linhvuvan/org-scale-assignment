@@ -29,3 +29,12 @@ export const updateCampaignById = async (id: string, updates: UpdateCampaign): P
     .returning();
   return updated;
 };
+
+export const scheduleCampaignById = async (id: string, scheduledAt: Date): Promise<Campaign> => {
+  const [updated] = await db
+    .update(campaignsTable)
+    .set({ status: "scheduled", scheduledAt, updatedAt: new Date() })
+    .where(eq(campaignsTable.id, id))
+    .returning();
+  return updated;
+};
