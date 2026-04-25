@@ -1,3 +1,5 @@
+import { CampaignStats } from "./campaignStats";
+
 export type CampaignStatus = "draft" | "scheduled" | "sent";
 
 export type Campaign = {
@@ -11,6 +13,8 @@ export type Campaign = {
   createdAt: Date;
   updatedAt: Date;
 };
+
+export type CampaignWithStats = Campaign & { stats: CampaignStats };
 
 export type NewCampaign = Omit<Campaign, "createdAt" | "updatedAt">;
 

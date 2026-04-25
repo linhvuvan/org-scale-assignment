@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq, sql } from "drizzle-orm";
 import { db } from "../3rd-parties/drizzle";
 import { campaignRecipientsTable, campaignsTable } from "./schema";
 import { Campaign, NewCampaign, UpdateCampaign } from "../entities/campaign";
@@ -37,6 +37,19 @@ export const scheduleCampaignById = async (id: string, scheduledAt: Date): Promi
     .where(eq(campaignsTable.id, id))
     .returning();
   return updated;
+};
+
+export const getCampaignStats = async (campaignId: string) => {
+  const [result] = await db
+    .select({
+      total: count(),
+      sent: count(sql`case when ${campaignRecipientsTable.status} = 'sent' then 1 end`),
+      failed: count(sql`case when ${campaignRecipientsTable.status} = 'failed' then 1 end`),
+      opened: count(sql`case when ${campaignRecipientsTable.openedAt} is not null then 1 end`),
+    })
+    .from(campaignRecipientsTable)
+    .where(eq(campaignRecipientsTable.campaignId, campaignId));
+  return result;
 };
 
 export const sendCampaignWithRecipients = async (id: string): Promise<Campaign> => {

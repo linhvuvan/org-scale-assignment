@@ -8,9 +8,10 @@ import {
   draftCampaignRequired,
   scheduledCampaignRequired,
 } from "../../middleware/campaign";
-import { createCampaign } from "../../business-logic/campaigns";
+import { createCampaign, computeCampaignStats } from "../../business-logic/campaigns";
 import {
   deleteCampaignById,
+  getCampaignStats,
   getCampaigns,
   insertCampaign,
   scheduleCampaignById,
@@ -51,6 +52,23 @@ export const createCampaignHandler = async (
       const inserted = await insertCampaign(campaign);
 
       res.status(201).json(inserted);
+    },
+  );
+};
+
+export const getCampaignHandler = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  await pipe(
+    req,
+    res,
+    authRequired,
+    campaignRequired(req.params.id),
+    async ({ ctx }) => {
+      const counts = await getCampaignStats(ctx.campaign.id);
+      const stats = computeCampaignStats(counts);
+      res.json({ ...ctx.campaign, stats });
     },
   );
 };
@@ -151,6 +169,23 @@ export const sendCampaignHandler = async (
       const updated = await sendCampaignWithRecipients(ctx.campaign.id);
 
       res.status(200).json(updated);
+    },
+  );
+};
+
+export const getCampaignStatsHandler = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  await pipe(
+    req,
+    res,
+    authRequired,
+    campaignRequired(req.params.id),
+    async ({ ctx }) => {
+      const counts = await getCampaignStats(ctx.campaign.id);
+      const stats = computeCampaignStats(counts);
+      res.json(stats);
     },
   );
 };
