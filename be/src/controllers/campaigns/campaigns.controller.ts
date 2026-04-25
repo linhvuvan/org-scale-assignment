@@ -4,7 +4,7 @@ import { jwt } from "../../3rd-parties/jwt";
 import { AUTH_COOKIE } from "../../config/constants";
 import { safeTry } from "../../utils/safeTry";
 import { createCampaign } from "../../business-logic/campaigns";
-import { insertCampaign } from "../../db/campaigns";
+import { getCampaigns, insertCampaign } from "../../db/campaigns";
 
 export const createCampaignSchema = z.object({
   name: z.string().min(1),
@@ -41,4 +41,22 @@ export const createCampaignHandler = async (
   });
   const inserted = await insertCampaign(campaign);
   res.status(201).json(inserted);
+};
+
+export const getCampaignsHandler = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const token: string | undefined = req.cookies[AUTH_COOKIE];
+  if (!token) {
+    res.status(401).json({ message: "unauthorized" });
+    return;
+  }
+  const [err] = safeTry(() => jwt.verifyToken(token));
+  if (err) {
+    res.status(401).json({ message: "unauthorized" });
+    return;
+  }
+  const campaigns = await getCampaigns();
+  res.status(200).json(campaigns);
 };
