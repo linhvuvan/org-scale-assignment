@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createCampaignHandler,
   createCampaignSchema,
+  deleteCampaignHandler,
   getCampaignsHandler,
 } from "../controllers/campaigns/campaigns.controller";
 import { validateBody } from "../middleware/validate";
@@ -15,3 +16,5 @@ campaignsRouter.post(
   validateBody(createCampaignSchema),
   createCampaignHandler,
 );
+
+campaignsRouter.delete("/:id", deleteCampaignHandler);

@@ -26,3 +26,25 @@ npm run dev            # start dev server with hot-reload
 | `npm run db:migrate` | Execute pending SQL migration files against the database. The production-safe way to evolve the schema — files are reviewable and committed to git. |
 | `npm run db:push` | Sync the schema directly to the DB without migration files. Fast for early prototyping, not safe once you have data you care about. |
 | `npm run db:studio` | Open a local web UI to browse and edit the database. |
+
+## API
+
+### Campaigns
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/campaigns` | List all campaigns |
+| `POST` | `/campaigns` | Create a new campaign |
+| `DELETE` | `/campaigns/:id` | Delete a draft campaign |
+
+#### Status codes
+
+| Code | Meaning |
+|------|---------|
+| `200` | OK — request succeeded, body contains data |
+| `201` | Created — resource created, body contains the new resource |
+| `204` | No Content — request succeeded, no body (e.g. successful delete) |
+| `400` | Bad Request — request body failed validation |
+| `401` | Unauthorized — missing or invalid auth token |
+| `404` | Not Found — resource does not exist |
+| `409` | Conflict — operation not allowed in the current state (e.g. deleting a non-draft campaign) |

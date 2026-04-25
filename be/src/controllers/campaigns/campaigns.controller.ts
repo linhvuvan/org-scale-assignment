@@ -4,7 +4,7 @@ import { jwt } from "../../3rd-parties/jwt";
 import { AUTH_COOKIE } from "../../config/constants";
 import { safeTry } from "../../utils/safeTry";
 import { createCampaign } from "../../business-logic/campaigns";
-import { getCampaigns, insertCampaign } from "../../db/campaigns";
+import { deleteCampaignById, getCampaignById, getCampaigns, insertCampaign } from "../../db/campaigns";
 
 export const createCampaignSchema = z.object({
   name: z.string().min(1),
@@ -59,4 +59,32 @@ export const getCampaignsHandler = async (
   }
   const campaigns = await getCampaigns();
   res.status(200).json(campaigns);
+};
+
+export const deleteCampaignHandler = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
+  const token: string | undefined = req.cookies[AUTH_COOKIE];
+  if (!token) {
+    res.status(401).json({ message: "unauthorized" });
+    return;
+  }
+  const [err] = safeTry(() => jwt.verifyToken(token));
+  if (err) {
+    res.status(401).json({ message: "unauthorized" });
+    return;
+  }
+  const { id } = req.params;
+  const campaign = await getCampaignById(id);
+  if (!campaign) {
+    res.status(404).json({ message: "campaign not found" });
+    return;
+  }
+  if (campaign.status !== "draft") {
+    res.status(409).json({ message: "only draft campaigns can be deleted" });
+    return;
+  }
+  await deleteCampaignById(id);
+  res.status(204).send();
 };
