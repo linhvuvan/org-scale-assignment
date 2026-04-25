@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import useSWRMutation from "swr/mutation";
 
 type RegisterArgs = { name: string; email: string; password: string };
@@ -112,6 +112,13 @@ export default function Register() {
             {isMutating ? "Creating account..." : "Register"}
           </button>
         </form>
+
+        <p className="mt-4 text-sm text-gray-500 text-center">
+          Already have an account?{" "}
+          <Link to="/login" className="text-blue-600 hover:underline">
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
