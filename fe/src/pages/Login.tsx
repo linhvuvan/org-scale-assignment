@@ -1,43 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import useSWRMutation from "swr/mutation";
-import { API_URL } from "../config/env";
-
-type LoginArgs = { email: string; password: string };
-
-async function loginFetcher(url: string, { arg }: { arg: LoginArgs }) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(arg),
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error((data as { message?: string }).message || "Login failed");
-  }
-  return res.json();
-}
+import { useLogin } from "../hooks/useLogin";
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const { trigger, isMutating } = useSWRMutation(
-    `${API_URL}/auth/login`,
-    loginFetcher,
-  );
+  const { login, isMutating, errorMessage } = useLogin();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrorMessage("");
-    try {
-      await trigger({ email, password });
+    const ok = await login({ email, password });
+    if (ok) {
       localStorage.setItem("logged_in", "true");
       navigate("/");
-    } catch (err) {
-      setErrorMessage(err instanceof Error ? err.message : "Login failed");
     }
   }
 

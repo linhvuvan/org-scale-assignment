@@ -1,48 +1,20 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import useSWRMutation from "swr/mutation";
-import { API_URL } from "../config/env";
-
-type RegisterArgs = { name: string; email: string; password: string };
-
-async function registerFetcher(url: string, { arg }: { arg: RegisterArgs }) {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(arg),
-  });
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}));
-    throw new Error(
-      (data as { message?: string }).message || "Registration failed",
-    );
-  }
-  return res.json();
-}
+import { useRegister } from "../hooks/useRegister";
 
 export default function Register() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const { register, isMutating, errorMessage } = useRegister();
 
-  const { trigger, isMutating } = useSWRMutation(
-    `${API_URL}/auth/register`,
-    registerFetcher,
-  );
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
-    setErrorMessage("");
-    try {
-      await trigger({ name, email, password });
-      navigate("/login");
-    } catch (err) {
-      setErrorMessage(
-        err instanceof Error ? err.message : "Registration failed",
-      );
-    }
+
+    const ok = await register({ name, email, password });
+
+    if (ok) navigate("/login");
   }
 
   return (
