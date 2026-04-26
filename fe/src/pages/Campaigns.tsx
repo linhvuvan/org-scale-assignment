@@ -57,7 +57,7 @@ export function Campaigns() {
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
             {campaigns.map((c) => (
-              <tr key={c.id}>
+              <tr key={c.id} className="cursor-pointer hover:bg-gray-50" onClick={() => navigate(`/campaigns/${c.id}`)}>
                 <td className="px-4 py-3 text-gray-800">{c.name}</td>
                 <td className="px-4 py-3 text-gray-800">{c.subject}</td>
                 <td className="px-4 py-3 text-gray-800">{c.body}</td>
