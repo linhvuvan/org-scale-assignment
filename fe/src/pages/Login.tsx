@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { Link } from "../components/common/Link";
 import { useLogin } from "../hooks/useLogin";
+import { Button } from "../components/common/Button";
+import { Label } from "../components/common/Label";
+import { Input } from "../components/common/Input";
 
-export default function Login() {
+export function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -10,7 +14,9 @@ export default function Login() {
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     const ok = await login({ email, password });
+
     if (ok) {
       localStorage.setItem("logged_in", "true");
       navigate("/");
@@ -24,30 +30,24 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
-            <label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
+            <Label htmlFor="email">Email</Label>
+            <Input
               id="email"
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
+            <Label htmlFor="password">Password</Label>
+            <Input
               id="password"
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -55,20 +55,13 @@ export default function Login() {
             <p className="text-sm text-red-500">{errorMessage}</p>
           )}
 
-          <button
-            type="submit"
-            disabled={isMutating}
-            className="bg-blue-600 text-white rounded-lg py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50"
-          >
+          <Button type="submit" disabled={isMutating}>
             {isMutating ? "Signing in..." : "Sign in"}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-4 text-sm text-gray-500 text-center">
-          Don't have an account?{" "}
-          <Link to="/register" className="text-blue-600 hover:underline">
-            Register
-          </Link>
+          Don't have an account? <Link to="/register">Register</Link>
         </p>
       </div>
     </div>

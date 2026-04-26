@@ -1,7 +1,9 @@
 import { Navigate, Outlet } from "react-router-dom";
 
-export default function GuestRoute() {
-  return localStorage.getItem("logged_in") === "true"
-    ? <Navigate to="/" replace />
-    : <Outlet />;
+export function GuestRoute() {
+  const isLoggedIn = localStorage.getItem("logged_in") === "true";
+
+  if (isLoggedIn) return <Navigate to="/" replace />;
+
+  return <Outlet />;
 }
