@@ -21,7 +21,7 @@ export function Login() {
 
     if (ok) {
       setLoggedIn(true);
-      navigate("/");
+      navigate("/campaigns");
     }
   }
 

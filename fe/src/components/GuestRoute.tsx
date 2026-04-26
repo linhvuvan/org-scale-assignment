@@ -4,7 +4,7 @@ import { useLoggedIn } from "../hooks/useLocalStorage";
 export function GuestRoute() {
   const { isLoggedIn } = useLoggedIn();
 
-  if (isLoggedIn) return <Navigate to="/" replace />;
+  if (isLoggedIn) return <Navigate to="/campaigns" replace />;
 
   return <Outlet />;
 }
