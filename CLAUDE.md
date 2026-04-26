@@ -102,9 +102,11 @@ Errors are set explicitly via `useState` in the `catch` block of mutation hooks.
 
 **`Input` className caveat:** `Input` hardcodes its `className` — passing `className` as a prop will override, not merge. To control layout (e.g. `flex-1`), wrap in a `<div>` instead.
 
-**Page layout conventions:**
-- Full-page views (Campaigns, NewCampaign): `min-h-screen bg-gray-50 p-8` with a `flex justify-between` header row.
-- Auth-style views (Login, Register): centered card `max-w-md bg-white rounded-2xl shadow p-8`.
+**Page layout conventions (mobile-first):**
+- Full-page views (Campaigns, NewCampaign, CampaignDetail): `min-h-screen bg-gray-50 p-4 sm:p-8` outer shell; inner content wrapped in `max-w-2xl mx-auto` (Campaigns uses `max-w-3xl`); header row uses `flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between`.
+- Auth-style views (Login, Register): centered card `max-w-md bg-white rounded-2xl shadow p-6 sm:p-8 mx-4 sm:mx-0`.
+- Campaigns list uses cards (not a table) at all breakpoints.
+- `Input` and `Textarea` include `w-full` by default.
 
 **`postFetcher` generic:** pass the args type as a generic so TypeScript knows the mutation payload shape: `postFetcher<MyArgs>`.
 

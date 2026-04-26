@@ -35,13 +35,14 @@ export function NewCampaign() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+      <div className="max-w-2xl mx-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">New Campaign</h1>
         <Link to="/campaigns">← Back</Link>
       </div>
 
-      <div className="bg-white rounded-2xl shadow p-8 max-w-xl">
+      <div className="bg-white rounded-2xl shadow p-6 sm:p-8 w-full">
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <Label htmlFor="name">Name</Label>
@@ -113,6 +114,7 @@ export function NewCampaign() {
             {isMutating ? "Creating..." : "Create Campaign"}
           </Button>
         </form>
+      </div>
       </div>
     </div>
   );

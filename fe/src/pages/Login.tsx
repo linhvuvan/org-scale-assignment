@@ -27,7 +27,7 @@ export function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow p-6 sm:p-8 mx-4 sm:mx-0">
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">Sign in</h1>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">

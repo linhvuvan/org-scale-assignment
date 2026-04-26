@@ -48,7 +48,7 @@ export function CampaignDetail() {
 
   if (errorMessage || !campaign) {
     return (
-      <div className="min-h-screen bg-gray-50 p-8">
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
         <p className="text-red-500">{errorMessage || "Campaign not found."}</p>
       </div>
     );
@@ -59,8 +59,9 @@ export function CampaignDetail() {
   const actionError = scheduleError || sendError || deleteError;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+      <div className="max-w-2xl mx-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <Link to="/campaigns">← Back</Link>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold text-gray-800">{campaign.name}</h1>
@@ -92,26 +93,28 @@ export function CampaignDetail() {
       {actionError && <p className="text-red-500 text-sm mb-4">{actionError}</p>}
 
       {showSchedule && (
-        <div className="bg-white rounded-2xl shadow p-6 max-w-2xl mb-6 flex items-end gap-3">
+        <div className="bg-white rounded-2xl shadow p-4 sm:p-6 mb-6 flex flex-col gap-3 sm:flex-row sm:items-end">
           <div className="flex flex-col gap-1 flex-1">
             <label className="text-xs font-medium text-gray-500 uppercase">Schedule at</label>
             <input
               type="datetime-local"
               value={scheduledAt}
               onChange={(e) => setScheduledAt(e.target.value)}
-              className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          <Button onClick={handleSchedule} disabled={!scheduledAt || isScheduling}>
-            {isScheduling ? "Scheduling..." : "Confirm"}
-          </Button>
-          <Button variant="secondary" onClick={() => setShowSchedule(false)} disabled={isScheduling}>
-            Cancel
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleSchedule} disabled={!scheduledAt || isScheduling}>
+              {isScheduling ? "Scheduling..." : "Confirm"}
+            </Button>
+            <Button variant="secondary" onClick={() => setShowSchedule(false)} disabled={isScheduling}>
+              Cancel
+            </Button>
+          </div>
         </div>
       )}
 
-      <div className="bg-white rounded-2xl shadow p-8 max-w-2xl mb-6">
+      <div className="bg-white rounded-2xl shadow p-6 sm:p-8 w-full mb-6">
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-xs font-medium text-gray-500 uppercase mb-1">Subject</p>
@@ -124,7 +127,7 @@ export function CampaignDetail() {
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl shadow p-8 max-w-2xl">
+      <div className="bg-white rounded-2xl shadow p-6 sm:p-8">
         <h2 className="text-sm font-semibold text-gray-700 uppercase mb-4">Stats</h2>
         <div className="flex flex-col gap-4">
           <div>
@@ -148,6 +151,7 @@ export function CampaignDetail() {
             <p className="text-xs text-gray-400 mt-1">{campaign.stats.opened} of {campaign.stats.sent} opened</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

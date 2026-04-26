@@ -24,8 +24,9 @@ export function Campaigns() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
+      <div className="max-w-3xl mx-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Campaigns</h1>
         <div className="flex gap-2">
           <Link to="/campaigns/new">
@@ -45,48 +46,32 @@ export function Campaigns() {
         <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-gray-200">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
-            <tr>
-              <th className="px-4 py-3 font-medium">Name</th>
-              <th className="px-4 py-3 font-medium">Subject</th>
-              <th className="px-4 py-3 font-medium">Body</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
-            {campaigns.map((c) => (
-              <tr key={c.id} className="cursor-pointer hover:bg-gray-50" onClick={() => navigate(`/campaigns/${c.id}`)}>
-                <td className="px-4 py-3 text-gray-800">{c.name}</td>
-                <td className="px-4 py-3 text-gray-800">{c.subject}</td>
-                <td className="px-4 py-3 text-gray-800">{c.body}</td>
-                <td className="px-4 py-3">
-                  <Badge variant={c.status}>{c.status}</Badge>
-                </td>
-              </tr>
-            ))}
-            {isLoading && (
-              <tr>
-                <td colSpan={4} className="px-4 py-6 text-center">
-                  <div className="flex justify-center">
-                    <Loader />
-                  </div>
-                </td>
-              </tr>
-            )}
-            {!isLoading && campaigns.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
-                  No campaigns found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="flex flex-col gap-3">
+        {campaigns.map((c) => (
+          <div
+            key={c.id}
+            className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer hover:bg-gray-50 active:bg-gray-50"
+            onClick={() => navigate(`/campaigns/${c.id}`)}
+          >
+            <div className="flex items-start justify-between gap-2 mb-1">
+              <p className="font-medium text-gray-800">{c.name}</p>
+              <Badge variant={c.status}>{c.status}</Badge>
+            </div>
+            <p className="text-sm text-gray-600 mb-1 truncate">{c.subject}</p>
+            <p className="text-sm text-gray-400 truncate">{c.body}</p>
+          </div>
+        ))}
+        {isLoading && (
+          <div className="flex justify-center py-8">
+            <Loader />
+          </div>
+        )}
+        {!isLoading && campaigns.length === 0 && (
+          <p className="text-center text-gray-400 py-8">No campaigns found.</p>
+        )}
       </div>
 
-      <div className="flex items-center justify-between mt-4">
+      <div className="flex flex-wrap items-center justify-between gap-y-2 mt-4">
         <span className="text-sm text-gray-500">
           Page {page} of {totalPages}
         </span>
@@ -106,6 +91,7 @@ export function Campaigns() {
             Next
           </Button>
         </div>
+      </div>
       </div>
     </div>
   );
