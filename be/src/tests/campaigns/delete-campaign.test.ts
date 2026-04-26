@@ -9,6 +9,7 @@ import {
 } from "../helpers/db";
 import { makeAuthCookie } from "../helpers/auth";
 import { getCampaignById } from "../../db/campaigns";
+import { getCampaignRecipients } from "../../db/campaignRecipients";
 
 describe("DELETE /campaigns/:id", () => {
   beforeAll(async () => {
@@ -65,18 +66,20 @@ describe("DELETE /campaigns/:id", () => {
 
   it("returns 204 and removes the campaign for a draft campaign", async () => {
     const user = await seedUser();
-    const campaign = await seedCampaign(user.id);
+    const campaign = await seedCampaign(user.id, "draft", ["a@test.com", "b@test.com"]);
     await request(app)
       .delete(`/campaigns/${campaign.id}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .expect(204);
     const deleted = await getCampaignById(campaign.id);
     expect(deleted).toBeUndefined();
+    const recipients = await getCampaignRecipients(campaign.id);
+    expect(recipients).toHaveLength(0);
   });
 
   it("returns 404 on a second delete of the same campaign", async () => {
     const user = await seedUser();
-    const campaign = await seedCampaign(user.id);
+    const campaign = await seedCampaign(user.id, "draft", ["a@test.com"]);
     await request(app)
       .delete(`/campaigns/${campaign.id}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))

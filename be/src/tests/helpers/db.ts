@@ -7,7 +7,7 @@ import {
   usersTable,
 } from "../../db/schema";
 import { insertUser } from "../../db/users";
-import { insertCampaign } from "../../db/campaigns";
+import { insertCampaignWithRecipients } from "../../db/campaigns";
 import { CampaignStatus } from "../../entities/campaign";
 
 export const runMigrations = async (): Promise<void> => {
@@ -29,12 +29,19 @@ export const seedUser = async () =>
     passwordHash: "irrelevant",
   });
 
-export const seedCampaign = async (createdBy: string, status: CampaignStatus = "draft") =>
-  insertCampaign({
-    id: crypto.randomUUID(),
-    name: "Test Campaign",
-    subject: "Hello",
-    body: "Body",
-    status,
-    createdBy,
+export const seedCampaign = async (
+  createdBy: string,
+  status: CampaignStatus = "draft",
+  recipientEmails: string[] = [],
+) =>
+  insertCampaignWithRecipients({
+    campaign: {
+      id: crypto.randomUUID(),
+      name: "Test Campaign",
+      subject: "Hello",
+      body: "Body",
+      status,
+      createdBy,
+    },
+    recipientEmails,
   });

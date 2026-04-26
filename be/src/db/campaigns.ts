@@ -1,6 +1,10 @@
 import { count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../3rd-parties/drizzle";
-import { campaignRecipientsTable, campaignsTable, recipientsTable } from "./schema";
+import {
+  campaignRecipientsTable,
+  campaignsTable,
+  recipientsTable,
+} from "./schema";
 import { Campaign, NewCampaign, UpdateCampaign } from "../entities/campaign";
 
 export const insertCampaignWithRecipients = async (payload: {
@@ -9,7 +13,10 @@ export const insertCampaignWithRecipients = async (payload: {
 }): Promise<Campaign> => {
   const { campaign, recipientEmails } = payload;
   return db.transaction(async (tx) => {
-    const [inserted] = await tx.insert(campaignsTable).values(campaign).returning();
+    const [inserted] = await tx
+      .insert(campaignsTable)
+      .values(campaign)
+      .returning();
 
     if (recipientEmails.length > 0) {
       const existing = await tx
@@ -25,13 +32,22 @@ export const insertCampaignWithRecipients = async (payload: {
       if (newEmails.length > 0) {
         const created = await tx
           .insert(recipientsTable)
-          .values(newEmails.map((email) => ({ id: crypto.randomUUID(), email, name: email })))
+          .values(
+            newEmails.map((email) => ({
+              id: crypto.randomUUID(),
+              email,
+              name: email,
+            })),
+          )
           .returning({ id: recipientsTable.id });
         allIds = [...allIds, ...created.map((r) => r.id)];
       }
 
       await tx.insert(campaignRecipientsTable).values(
-        allIds.map((recipientId) => ({ campaignId: inserted.id, recipientId })),
+        allIds.map((recipientId) => ({
+          campaignId: inserted.id,
+          recipientId,
+        })),
       );
     }
 
@@ -45,9 +61,7 @@ export const getCampaigns = async (params: {
 }): Promise<{ data: Campaign[]; total: number }> => {
   const { limit, offset } = params;
 
-  const [{ total }] = await db
-    .select({ total: count() })
-    .from(campaignsTable);
+  const [{ total }] = await db.select({ total: count() }).from(campaignsTable);
 
   const data = await db
     .select()
@@ -59,16 +73,29 @@ export const getCampaigns = async (params: {
   return { data, total };
 };
 
-export const getCampaignById = async (id: string): Promise<Campaign | undefined> => {
-  const [campaign] = await db.select().from(campaignsTable).where(eq(campaignsTable.id, id));
+export const getCampaignById = async (
+  id: string,
+): Promise<Campaign | undefined> => {
+  const [campaign] = await db
+    .select()
+    .from(campaignsTable)
+    .where(eq(campaignsTable.id, id));
   return campaign;
 };
 
 export const deleteCampaignById = async (id: string): Promise<void> => {
-  await db.delete(campaignsTable).where(eq(campaignsTable.id, id));
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(campaignRecipientsTable)
+      .where(eq(campaignRecipientsTable.campaignId, id));
+    await tx.delete(campaignsTable).where(eq(campaignsTable.id, id));
+  });
 };
 
-export const updateCampaignById = async (id: string, updates: UpdateCampaign): Promise<Campaign> => {
+export const updateCampaignById = async (
+  id: string,
+  updates: UpdateCampaign,
+): Promise<Campaign> => {
   const [updated] = await db
     .update(campaignsTable)
     .set({ ...updates, updatedAt: new Date() })
@@ -77,7 +104,10 @@ export const updateCampaignById = async (id: string, updates: UpdateCampaign): P
   return updated;
 };
 
-export const scheduleCampaignById = async (id: string, scheduledAt: Date): Promise<Campaign> => {
+export const scheduleCampaignById = async (
+  id: string,
+  scheduledAt: Date,
+): Promise<Campaign> => {
   const [updated] = await db
     .update(campaignsTable)
     .set({ status: "scheduled", scheduledAt, updatedAt: new Date() })
@@ -90,16 +120,24 @@ export const getCampaignStats = async (campaignId: string) => {
   const [result] = await db
     .select({
       total: count(),
-      sent: count(sql`case when ${campaignRecipientsTable.status} = 'sent' then 1 end`),
-      failed: count(sql`case when ${campaignRecipientsTable.status} = 'failed' then 1 end`),
-      opened: count(sql`case when ${campaignRecipientsTable.openedAt} is not null then 1 end`),
+      sent: count(
+        sql`case when ${campaignRecipientsTable.status} = 'sent' then 1 end`,
+      ),
+      failed: count(
+        sql`case when ${campaignRecipientsTable.status} = 'failed' then 1 end`,
+      ),
+      opened: count(
+        sql`case when ${campaignRecipientsTable.openedAt} is not null then 1 end`,
+      ),
     })
     .from(campaignRecipientsTable)
     .where(eq(campaignRecipientsTable.campaignId, campaignId));
   return result;
 };
 
-export const sendCampaignWithRecipients = async (id: string): Promise<Campaign> => {
+export const sendCampaignWithRecipients = async (
+  id: string,
+): Promise<Campaign> => {
   return db.transaction(async (tx) => {
     await tx
       .update(campaignRecipientsTable)
