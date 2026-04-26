@@ -1,7 +1,8 @@
 import { Navigate, Outlet } from "react-router-dom";
+import { useLoggedIn } from "../hooks/useLocalStorage";
 
 export function ProtectedRoute() {
-  const isLoggedIn = localStorage.getItem("logged_in") === "true";
+  const { isLoggedIn } = useLoggedIn();
 
   if (isLoggedIn) return <Outlet />;
 

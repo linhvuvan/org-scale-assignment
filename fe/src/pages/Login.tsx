@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Link } from "../components/common/Link";
 import { useLogin } from "../hooks/useLogin";
+import { useLoggedIn } from "../hooks/useLocalStorage";
 import { Button } from "../components/common/Button";
 import { Label } from "../components/common/Label";
 import { Input } from "../components/common/Input";
@@ -11,14 +12,15 @@ export function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, isMutating, errorMessage } = useLogin();
+  const { setLoggedIn } = useLoggedIn();
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const ok = await login({ email, password });
 
     if (ok) {
-      localStorage.setItem("logged_in", "true");
+      setLoggedIn(true);
       navigate("/");
     }
   }

@@ -1,11 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/common/Button";
+import { useLoggedIn } from "../hooks/useLocalStorage";
 
 export function Home() {
   const navigate = useNavigate();
+  const { removeLoggedIn } = useLoggedIn();
 
   function handleLogout() {
-    localStorage.removeItem("logged_in");
+    removeLoggedIn();
     navigate("/login");
   }
 
