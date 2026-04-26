@@ -42,11 +42,17 @@ await pipe(req, res,
 );
 ```
 
-**Middleware steps** live in `src/middleware/`: `authRequired`, `bodyRequired(zodSchema)`, `validateParams`, `campaignRequired`, `userRequired`, `errorHandler`.
+**Middleware steps** live in `src/middleware/`: `authRequired`, `bodyRequired(zodSchema)`, `validateParams`, `campaignRequired`, `draftCampaignRequired`, `scheduledCampaignRequired`, `userRequired`, `errorHandler`.
 
-**Database** (`src/db/`): `schema.ts` defines all Drizzle tables; `users.ts` / `campaigns.ts` export typed query functions. Tables: `users`, `campaigns`, `recipients`, `campaign_recipients`.
+**`safeTry`** (`src/utils/safeTry.ts`) — wraps a synchronous function and returns `[Error, null] | [null, T]`, avoiding try/catch boilerplate for things like JWT parsing.
 
-**Auth flow**: POST `/auth/register` or `/auth/login` → bcrypt verify → sign JWT (8h, `JWT_SECRET`) → set HTTP-only cookie named `token`.
+**Database** (`src/db/`): `schema.ts` defines all Drizzle tables; `users.ts` / `campaigns.ts` export typed query functions. Tables: `users`, `campaigns`, `recipients`, `campaign_recipients`. Campaign status enum: `draft | scheduled | sent`. Campaign-recipient status enum: `pending | sent | failed`.
+
+**Entities** (`src/entities/`): typed domain objects (`Campaign`, `CampaignWithStats`, `CampaignStats`, `CampaignRecipient`, `Recipient`, `User`) shared between db queries and controllers.
+
+**Tests** (`src/tests/`): Vitest + Supertest integration tests against a real DB. Helpers in `src/tests/helpers/`: `db.ts` (runMigrations, truncateTables, seed functions) and `auth.ts` (makeAuthCookie). Test files mirror the handler they cover (e.g. `campaigns/delete-campaign.test.ts`).
+
+**Auth flow**: POST `/auth/register` or `/auth/login` → bcrypt verify → sign JWT (8h, `JWT_SECRET`) → set HTTP-only cookie named `token`. POST `/auth/logout` clears the cookie.
 
 ### Environment variables
 ```
@@ -76,14 +82,14 @@ React 19 · React Router DOM 7 · SWR 2 · Tailwind CSS 4 · Vite 8 · TypeScrip
 ### Architecture
 
 **Directory layout:**
-- `src/pages/` — full-page route components (Login, Register, Campaigns, NewCampaign)
+- `src/pages/` — full-page route components (Login, Register, Campaigns, NewCampaign, CampaignDetail)
 - `src/components/` — reusable UI; `common/` for primitives (Button, Input, Textarea, Badge, Label, Link, Loader)
 - `src/hooks/` — SWR-backed data hooks; mutations use `useSWRMutation`
-- `src/entities/` — shared TypeScript types (e.g. `Campaign`)
+- `src/entities/` — shared TypeScript types (`Campaign`, `CampaignWithStats`, `CampaignStats`)
 - `src/config/env.ts` — exports `API_URL` from `VITE_API_URL` (defaults to `http://localhost:3000`)
-- `src/3rd-parties/fetcher.ts` — `getFetcher` / `postFetcher` helpers; both include `credentials: "include"` for cookie auth
+- `src/3rd-parties/fetcher.ts` — `getFetcher` / `postFetcher` / `deleteFetcher` helpers; all include `credentials: "include"` for cookie auth
 
-**Routing** (`App.tsx`): BrowserRouter wrapping `<ProtectedRoute>` (requires `isLoggedIn`) and `<GuestRoute>` (requires `!isLoggedIn`). Auth state is a boolean in localStorage under key `"logged_in"`, read via `useLoggedIn()`.
+**Routing** (`App.tsx`): BrowserRouter wrapping `<ProtectedRoute>` (requires `isLoggedIn`) and `<GuestRoute>` (requires `!isLoggedIn`). Routes: `/campaigns`, `/campaigns/new`, `/campaigns/:id` (protected); `/login`, `/register` (guest); everything else redirects to `/login`. Auth state is a boolean in localStorage under key `"logged_in"`, read via `useLoggedIn()` from `src/hooks/useLocalStorage.ts`.
 
 **Data fetching pattern:**
 ```typescript
@@ -103,6 +109,17 @@ Errors are set explicitly via `useState` in the `catch` block of mutation hooks.
 **`postFetcher` generic:** pass the args type as a generic so TypeScript knows the mutation payload shape: `postFetcher<MyArgs>`.
 
 **`deleteFetcher`:** `src/3rd-parties/fetcher.ts` exports a `deleteFetcher(url)` for `DELETE` requests. Use with `useSWRMutation` — trigger takes no argument.
+
+**Hooks reference:**
+| Hook | Purpose |
+|------|---------|
+| `useGetCampaigns(page)` | paginated campaign list |
+| `useGetCampaign(id)` | single campaign + stats (`CampaignWithStats`) |
+| `useCreateCampaign()` | POST /campaigns |
+| `useDeleteCampaign(id)` | DELETE /campaigns/:id |
+| `useScheduleCampaign(id)` | POST /campaigns/:id/schedule |
+| `useSendCampaign(id)` | POST /campaigns/:id/send |
+| `useLogin()` / `useRegister()` / `useLogout()` | auth mutations |
 
 **Entity files:** one type per file in `src/entities/`. E.g. `Campaign` in `campaign.ts`, `CampaignStats` in `campaignStats.ts`. Do not bundle unrelated types into the same file.
 
