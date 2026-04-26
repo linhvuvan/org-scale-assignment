@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "../components/common/Badge";
 import { Button } from "../components/common/Button";
+import { Link } from "../components/common/Link";
 import { Loader } from "../components/common/Loader";
 import { PAGE_SIZE } from "../config/constants";
 import { useGetCampaigns } from "../hooks/useGetCampaigns";
@@ -26,13 +27,18 @@ export function Campaigns() {
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold text-gray-800">Campaigns</h1>
-        <Button
-          variant="secondary"
-          onClick={handleLogout}
-          disabled={isMutating}
-        >
-          Logout
-        </Button>
+        <div className="flex gap-2">
+          <Link to="/campaigns/new">
+            <Button>New Campaign</Button>
+          </Link>
+          <Button
+            variant="secondary"
+            onClick={handleLogout}
+            disabled={isMutating}
+          >
+            Logout
+          </Button>
+        </div>
       </div>
 
       {errorMessage && (

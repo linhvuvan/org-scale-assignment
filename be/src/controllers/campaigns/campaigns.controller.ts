@@ -13,7 +13,7 @@ import {
   deleteCampaignById,
   getCampaignStats,
   getCampaigns,
-  insertCampaign,
+  insertCampaignWithRecipients,
   scheduleCampaignById,
   sendCampaignWithRecipients,
   updateCampaignById,
@@ -23,6 +23,7 @@ const createCampaignSchema = z.object({
   name: z.string().min(1),
   subject: z.string().min(1),
   body: z.string().min(1),
+  recipientEmails: z.array(z.string().email()).default([]),
 });
 
 export const createCampaignHandler = async (
@@ -35,13 +36,16 @@ export const createCampaignHandler = async (
     authRequired,
     bodyRequired(createCampaignSchema),
     async ({ ctx }) => {
-      const inserted = await insertCampaign({
-        id: crypto.randomUUID(),
-        name: ctx.body.name,
-        subject: ctx.body.subject,
-        body: ctx.body.body,
-        status: "draft",
-        createdBy: ctx.user.id,
+      const inserted = await insertCampaignWithRecipients({
+        campaign: {
+          id: crypto.randomUUID(),
+          name: ctx.body.name,
+          subject: ctx.body.subject,
+          body: ctx.body.body,
+          status: "draft",
+          createdBy: ctx.user.id,
+        },
+        recipientEmails: ctx.body.recipientEmails,
       });
 
       res.status(201).json(inserted);

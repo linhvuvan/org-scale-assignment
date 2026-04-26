@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Register } from "./pages/Register";
 import { Login } from "./pages/Login";
 import { Campaigns } from "./pages/Campaigns";
+import { NewCampaign } from "./pages/NewCampaign";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { GuestRoute } from "./components/GuestRoute";
 
@@ -13,6 +14,7 @@ export default function App() {
         <Routes>
           <Route element={<ProtectedRoute />}>
             <Route path="/campaigns" element={<Campaigns />} />
+            <Route path="/campaigns/new" element={<NewCampaign />} />
           </Route>
           <Route element={<GuestRoute />}>
             <Route path="/register" element={<Register />} />

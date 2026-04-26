@@ -1,11 +1,42 @@
-import { count, desc, eq, sql } from "drizzle-orm";
+import { count, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../3rd-parties/drizzle";
-import { campaignRecipientsTable, campaignsTable } from "./schema";
+import { campaignRecipientsTable, campaignsTable, recipientsTable } from "./schema";
 import { Campaign, NewCampaign, UpdateCampaign } from "../entities/campaign";
 
-export const insertCampaign = async (campaign: NewCampaign): Promise<Campaign> => {
-  const [inserted] = await db.insert(campaignsTable).values(campaign).returning();
-  return inserted;
+export const insertCampaignWithRecipients = async (payload: {
+  campaign: NewCampaign;
+  recipientEmails: string[];
+}): Promise<Campaign> => {
+  const { campaign, recipientEmails } = payload;
+  return db.transaction(async (tx) => {
+    const [inserted] = await tx.insert(campaignsTable).values(campaign).returning();
+
+    if (recipientEmails.length > 0) {
+      const existing = await tx
+        .select({ id: recipientsTable.id, email: recipientsTable.email })
+        .from(recipientsTable)
+        .where(inArray(recipientsTable.email, recipientEmails));
+
+      const existingEmails = new Set(existing.map((r) => r.email));
+      const newEmails = recipientEmails.filter((e) => !existingEmails.has(e));
+
+      let allIds = existing.map((r) => r.id);
+
+      if (newEmails.length > 0) {
+        const created = await tx
+          .insert(recipientsTable)
+          .values(newEmails.map((email) => ({ id: crypto.randomUUID(), email, name: email })))
+          .returning({ id: recipientsTable.id });
+        allIds = [...allIds, ...created.map((r) => r.id)];
+      }
+
+      await tx.insert(campaignRecipientsTable).values(
+        allIds.map((recipientId) => ({ campaignId: inserted.id, recipientId })),
+      );
+    }
+
+    return inserted;
+  });
 };
 
 export const getCampaigns = async (params: {
