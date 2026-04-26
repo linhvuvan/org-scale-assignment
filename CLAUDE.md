@@ -42,7 +42,12 @@ await pipe(req, res,
 );
 ```
 
-**Middleware steps** live in `src/middleware/`: `authRequired`, `bodyRequired(zodSchema)`, `validateParams`, `campaignRequired`, `draftCampaignRequired`, `scheduledCampaignRequired`, `userRequired`, `errorHandler`.
+**Middleware steps** live in `src/middleware/`:
+- `auth.ts`: `authRequired` — verifies JWT cookie, adds `ctx.user`
+- `validate.ts`: `bodyRequired(zodSchema)` — validates request body; `queryRequired(zodSchema)` — validates query params
+- `campaign.ts`: `campaignRequired(id)` — fetches campaign by id, adds `ctx.campaign`; `draftCampaignRequired` — asserts `ctx.campaign.status === "draft"`; `scheduledCampaignRequired` — asserts `ctx.campaign.status === "scheduled"`
+- `user.ts`: `userRequired` — looks up user by email, adds `ctx.user`; `emailAvailableRequired` — asserts email not already taken; `passwordRequired` — verifies bcrypt hash
+- `errorHandler.ts`: `errorHandler` — Express error middleware, returns 500
 
 **`safeTry`** (`src/utils/safeTry.ts`) — wraps a synchronous function and returns `[Error, null] | [null, T]`, avoiding try/catch boilerplate for things like JWT parsing.
 
@@ -87,7 +92,7 @@ React 19 · React Router DOM 7 · SWR 2 · Tailwind CSS 4 · Vite 8 · TypeScrip
 - `src/hooks/` — SWR-backed data hooks; mutations use `useSWRMutation`
 - `src/entities/` — shared TypeScript types (`Campaign`, `CampaignWithStats`, `CampaignStats`)
 - `src/config/env.ts` — exports `API_URL` from `VITE_API_URL` (defaults to `http://localhost:3000`)
-- `src/3rd-parties/fetcher.ts` — `getFetcher` / `postFetcher` / `deleteFetcher` helpers; all include `credentials: "include"` for cookie auth
+- `src/3rd-parties/fetcher.ts` — `getFetcher` / `postFetcher` / `deleteFetcher` helpers; all include `credentials: "include"` for cookie auth. Any 401 response clears `localStorage` and redirects to `/login?error=session_expired`.
 
 **Routing** (`App.tsx`): BrowserRouter wrapping `<ProtectedRoute>` (requires `isLoggedIn`) and `<GuestRoute>` (requires `!isLoggedIn`). Routes: `/campaigns`, `/campaigns/new`, `/campaigns/:id` (protected); `/login`, `/register` (guest); everything else redirects to `/login`. Auth state is a boolean in localStorage under key `"logged_in"`, read via `useLoggedIn()` from `src/hooks/useLocalStorage.ts`.
 

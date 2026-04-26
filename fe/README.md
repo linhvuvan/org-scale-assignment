@@ -43,4 +43,4 @@ All other routes redirect to `/login`.
 
 **Data fetching** uses SWR for reads and `useSWRMutation` for writes. Errors are captured explicitly via `useState` in each hook's `catch` block.
 
-**Fetchers** (`src/3rd-parties/fetcher.ts`): `getFetcher`, `postFetcher<T>`, `deleteFetcher` — all send `credentials: "include"` for cookie auth.
+**Fetchers** (`src/3rd-parties/fetcher.ts`): `getFetcher`, `postFetcher<T>`, `deleteFetcher` — all send `credentials: "include"` for cookie auth. Any `401` response clears `localStorage` and redirects to `/login?error=session_expired`.

@@ -30,6 +30,12 @@ npm run dev            # start dev server with hot-reload
 
 ## API
 
+### Health
+
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/health` | Health check — returns 200 |
+
 ### Auth
 
 | Method | Path | Description |
