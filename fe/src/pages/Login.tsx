@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Link } from "../components/common/Link";
 import { useLogin } from "../hooks/useLogin";
 import { useLoggedIn } from "../hooks/useLocalStorage";
@@ -9,6 +9,8 @@ import { Input } from "../components/common/Input";
 
 export function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const hasSessionError = searchParams.get("error") === "session_expired";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login, isMutating, errorMessage } = useLogin();
@@ -29,6 +31,12 @@ export function Login() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow p-6 sm:p-8 mx-4 sm:mx-0">
         <h1 className="text-2xl font-semibold text-gray-800 mb-6">Sign in</h1>
+
+        {hasSessionError && (
+          <p className="text-sm text-red-500 mb-4">
+            Your session has expired. Please sign in again.
+          </p>
+        )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1">

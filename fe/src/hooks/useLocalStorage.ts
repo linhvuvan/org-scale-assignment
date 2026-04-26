@@ -33,3 +33,7 @@ export function useLoggedIn() {
   );
   return { isLoggedIn, setLoggedIn, removeLoggedIn };
 }
+
+export function clearLoggedIn() {
+  localStorage.removeItem("logged_in");
+}
