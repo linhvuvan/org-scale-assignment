@@ -1,23 +1,45 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Badge } from "../components/common/Badge";
 import { Button } from "../components/common/Button";
+import { Loader } from "../components/common/Loader";
 import { PAGE_SIZE } from "../config/constants";
 import { useGetCampaigns } from "../hooks/useGetCampaigns";
+import { useLogout } from "../hooks/useLogout";
+import { useLoggedIn } from "../hooks/useLocalStorage";
 
 export function Campaigns() {
   const [page, setPage] = useState(1);
   const { campaigns, total, isLoading, errorMessage } = useGetCampaigns(page);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const navigate = useNavigate();
+  const { logout, isMutating } = useLogout();
+  const { removeLoggedIn } = useLoggedIn();
+
+  async function handleLogout() {
+    await logout();
+    removeLoggedIn();
+    navigate("/login");
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <h1 className="text-2xl font-semibold text-gray-800 mb-6">Campaigns</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-semibold text-gray-800">Campaigns</h1>
+        <Button
+          variant="secondary"
+          onClick={handleLogout}
+          disabled={isMutating}
+        >
+          Logout
+        </Button>
+      </div>
 
       {errorMessage && (
         <p className="text-red-500 text-sm mb-4">{errorMessage}</p>
       )}
 
-      <div className={`overflow-hidden rounded-lg border border-gray-200 ${isLoading ? "opacity-50" : ""}`}>
+      <div className="overflow-hidden rounded-lg border border-gray-200">
         <table className="w-full text-sm text-left">
           <thead className="bg-gray-100 text-gray-600 uppercase text-xs">
             <tr>
@@ -38,9 +60,20 @@ export function Campaigns() {
                 </td>
               </tr>
             ))}
+            {isLoading && (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center">
+                  <div className="flex justify-center">
+                    <Loader />
+                  </div>
+                </td>
+              </tr>
+            )}
             {!isLoading && campaigns.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-gray-400">No campaigns found.</td>
+                <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                  No campaigns found.
+                </td>
               </tr>
             )}
           </tbody>
@@ -48,12 +81,22 @@ export function Campaigns() {
       </div>
 
       <div className="flex items-center justify-between mt-4">
-        <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
+        <span className="text-sm text-gray-500">
+          Page {page} of {totalPages}
+        </span>
         <div className="flex gap-2">
-          <Button variant="secondary" onClick={() => setPage((p) => p - 1)} disabled={page <= 1}>
+          <Button
+            variant="secondary"
+            onClick={() => setPage((p) => p - 1)}
+            disabled={page <= 1}
+          >
             Previous
           </Button>
-          <Button variant="secondary" onClick={() => setPage((p) => p + 1)} disabled={page >= totalPages}>
+          <Button
+            variant="secondary"
+            onClick={() => setPage((p) => p + 1)}
+            disabled={page >= totalPages}
+          >
             Next
           </Button>
         </div>

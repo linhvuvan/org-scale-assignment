@@ -46,6 +46,10 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+export const logout = async (_req: Request, res: Response) => {
+  res.clearCookie(AUTH_COOKIE).status(200).json({ message: "ok" });
+};
+
 export const login = async (req: Request, res: Response) => {
   await pipe(
     req,
