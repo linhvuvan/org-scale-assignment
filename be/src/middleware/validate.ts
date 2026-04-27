@@ -1,5 +1,4 @@
-import { Request, Response, NextFunction } from "express";
-import { ZodSchema, ZodType, z } from "zod";
+import { ZodType, z } from "zod";
 import { Step } from "../utils/pipe";
 
 export const bodyRequired =
@@ -9,12 +8,10 @@ export const bodyRequired =
   async ({ req, res }) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
-      res
-        .status(400)
-        .json({
-          message: "validation error",
-          errors: z.flattenError(result.error),
-        });
+      res.status(400).json({
+        message: result.error.issues.map((e) => e.message).join(", "),
+        errors: z.flattenError(result.error),
+      });
       return null;
     }
     req.body = result.data;
@@ -28,12 +25,10 @@ export const queryRequired =
   async ({ req, res }) => {
     const result = schema.safeParse(req.query);
     if (!result.success) {
-      res
-        .status(400)
-        .json({
-          message: "validation error",
-          errors: z.flattenError(result.error),
-        });
+      res.status(400).json({
+        message: result.error.issues.map((e) => e.message).join(", "),
+        errors: z.flattenError(result.error),
+      });
       return null;
     }
     return { query: result.data };
