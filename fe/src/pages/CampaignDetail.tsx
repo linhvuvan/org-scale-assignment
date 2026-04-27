@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "../components/common/Badge";
 import { Button } from "../components/common/Button";
-import { Link } from "../components/common/Link";
 import { Loader } from "../components/common/Loader";
 import { useGetCampaign } from "../hooks/useGetCampaign";
 import { useScheduleCampaign } from "../hooks/useScheduleCampaign";
@@ -62,7 +61,7 @@ export function CampaignDetail() {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <Link to="/campaigns">← Back</Link>
+        <Button variant="link" onClick={() => navigate(-1)}>← Back</Button>
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-semibold text-gray-800">{campaign.name}</h1>
           <Badge variant={campaign.status}>{campaign.status}</Badge>
