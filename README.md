@@ -29,10 +29,10 @@ docker compose up -d
 
 On first `docker compose up`, the backend automatically seeds the database with demo data:
 
-| | |
-|---|---|
-| Email | `demo@example.com` |
-| Password | `password` |
+|          |                    |
+| -------- | ------------------ |
+| Email    | `demo@example.com` |
+| Password | `12345679`         |
 
 5 campaigns are created (2 draft, 1 scheduled, 2 sent) with 10 recipients and realistic stats.
 To reseed, stop the stack and drop the volume: `docker compose down -v`.

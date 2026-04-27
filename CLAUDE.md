@@ -22,6 +22,7 @@ npm test             # vitest run (all tests)
 npm run db:generate  # generate Drizzle migration files
 npm run db:migrate   # apply migrations
 npm run db:push      # push schema directly (dev shortcut)
+npm run db:seed      # seed demo data (skips if DB is not empty)
 npm run db:studio    # open Drizzle Studio UI
 ```
 
@@ -51,7 +52,9 @@ await pipe(req, res,
 
 **`safeTry`** (`src/utils/safeTry.ts`) — wraps a synchronous function and returns `[Error, null] | [null, T]`, avoiding try/catch boilerplate for things like JWT parsing.
 
-**Database** (`src/db/`): `schema.ts` defines all Drizzle tables; `users.ts` / `campaigns.ts` export typed query functions. Tables: `users`, `campaigns`, `recipients`, `campaign_recipients`. Campaign status enum: `draft | scheduled | sent`. Campaign-recipient status enum: `pending | sent | failed`.
+**3rd-party wrappers** (`src/3rd-parties/`): thin config modules for bcrypt, CORS, Drizzle client, JWT signing, and Morgan logger — import from here rather than configuring inline.
+
+**Database** (`src/db/`): `schema.ts` defines all Drizzle tables; `users.ts` / `campaigns.ts` / `campaignRecipients.ts` export typed query functions. Tables: `users`, `campaigns`, `recipients`, `campaign_recipients`. Campaign status enum: `draft | scheduled | sent`. Campaign-recipient status enum: `pending | sent | failed`.
 
 **Entities** (`src/entities/`): typed domain objects (`Campaign`, `CampaignWithStats`, `CampaignStats`, `CampaignRecipient`, `Recipient`, `User`) shared between db queries and controllers.
 
@@ -65,6 +68,7 @@ PORT=3000
 NODE_ENV=development
 DATABASE_URL=postgres://app:app@localhost:5432/app
 JWT_SECRET=your-secret-here
+FRONTEND_ORIGIN=http://localhost:5173
 ```
 Copy `.env.example` → `.env`. A `docker-compose.yml` is provided to spin up PostgreSQL locally.
 
@@ -90,7 +94,7 @@ React 19 · React Router DOM 7 · SWR 2 · Tailwind CSS 4 · Vite 8 · TypeScrip
 - `src/pages/` — full-page route components (Login, Register, Campaigns, NewCampaign, CampaignDetail)
 - `src/components/` — reusable UI; `common/` for primitives (Button, Input, Textarea, Badge, Label, Link, Loader)
 - `src/hooks/` — SWR-backed data hooks; mutations use `useSWRMutation`
-- `src/entities/` — shared TypeScript types (`Campaign`, `CampaignWithStats`, `CampaignStats`)
+- `src/entities/` — shared TypeScript types (`Campaign`, `CampaignWithStats`, `CampaignStats`, `CampaignRecipient`)
 - `src/config/env.ts` — exports `API_URL` from `VITE_API_URL` (defaults to `http://localhost:3000`)
 - `src/3rd-parties/fetcher.ts` — `getFetcher` / `postFetcher` / `deleteFetcher` helpers; all include `credentials: "include"` for cookie auth. Any 401 response clears `localStorage` and redirects to `/login?error=session_expired`.
 
