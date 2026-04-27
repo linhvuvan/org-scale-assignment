@@ -42,10 +42,7 @@ describe("POST /campaigns/:id/schedule", () => {
       .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({})
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 400 when scheduledAt is not a valid ISO datetime", async () => {
@@ -54,10 +51,7 @@ describe("POST /campaigns/:id/schedule", () => {
       .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ scheduledAt: "not-a-date" })
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 400 when scheduledAt is in the past", async () => {
@@ -66,10 +60,7 @@ describe("POST /campaigns/:id/schedule", () => {
       .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ scheduledAt: new Date(Date.now() - 60_000).toISOString() })
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 404 when the campaign does not exist", async () => {

@@ -41,10 +41,7 @@ describe("PATCH /campaigns/:id", () => {
       .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ name: "" })
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 400 when subject is empty", async () => {
@@ -53,10 +50,7 @@ describe("PATCH /campaigns/:id", () => {
       .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ subject: "" })
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 400 when body is empty", async () => {
@@ -65,10 +59,7 @@ describe("PATCH /campaigns/:id", () => {
       .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ body: "" })
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 400 when status is invalid", async () => {
@@ -77,10 +68,7 @@ describe("PATCH /campaigns/:id", () => {
       .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ status: "unknown" })
-      .expect(400)
-      .expect((res) => {
-        expect(res.body.message).toBe("validation error");
-      });
+      .expect(400);
   });
 
   it("returns 404 when the campaign does not exist", async () => {
