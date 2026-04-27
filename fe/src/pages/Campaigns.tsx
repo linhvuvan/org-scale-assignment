@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "../components/common/Badge";
 import { Button } from "../components/common/Button";
 import { Link } from "../components/common/Link";
@@ -10,7 +9,8 @@ import { useLogout } from "../hooks/useLogout";
 import { useLoggedIn } from "../hooks/useLocalStorage";
 
 export function Campaigns() {
-  const [page, setPage] = useState(1);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const { campaigns, total, isLoading, errorMessage } = useGetCampaigns(page);
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   const navigate = useNavigate();
@@ -78,14 +78,14 @@ export function Campaigns() {
         <div className="flex gap-2">
           <Button
             variant="secondary"
-            onClick={() => setPage((p) => p - 1)}
+            onClick={() => setSearchParams({ page: String(page - 1) })}
             disabled={page <= 1}
           >
             Previous
           </Button>
           <Button
             variant="secondary"
-            onClick={() => setPage((p) => p + 1)}
+            onClick={() => setSearchParams({ page: String(page + 1) })}
             disabled={page >= totalPages}
           >
             Next
