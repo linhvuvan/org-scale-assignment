@@ -8,6 +8,7 @@ import {
   seedCampaign,
 } from "../helpers/db";
 import { makeAuthCookie } from "../helpers/auth";
+import { v4 as uuidv4 } from "uuid";
 
 describe("POST /campaigns/:id/schedule", () => {
   beforeAll(async () => {
@@ -22,14 +23,14 @@ describe("POST /campaigns/:id/schedule", () => {
 
   it("returns 401 when no cookie is present", async () => {
     await request(app)
-      .post(`/campaigns/${crypto.randomUUID()}/schedule`)
+      .post(`/campaigns/${uuidv4()}/schedule`)
       .expect(401)
       .expect({ message: "unauthorized" });
   });
 
   it("returns 401 when the JWT is invalid", async () => {
     await request(app)
-      .post(`/campaigns/${crypto.randomUUID()}/schedule`)
+      .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", "token=badtoken")
       .expect(401)
       .expect({ message: "unauthorized" });
@@ -38,7 +39,7 @@ describe("POST /campaigns/:id/schedule", () => {
   it("returns 400 when scheduledAt is missing", async () => {
     const user = await seedUser();
     await request(app)
-      .post(`/campaigns/${crypto.randomUUID()}/schedule`)
+      .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({})
       .expect(400)
@@ -50,7 +51,7 @@ describe("POST /campaigns/:id/schedule", () => {
   it("returns 400 when scheduledAt is not a valid ISO datetime", async () => {
     const user = await seedUser();
     await request(app)
-      .post(`/campaigns/${crypto.randomUUID()}/schedule`)
+      .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ scheduledAt: "not-a-date" })
       .expect(400)
@@ -62,7 +63,7 @@ describe("POST /campaigns/:id/schedule", () => {
   it("returns 400 when scheduledAt is in the past", async () => {
     const user = await seedUser();
     await request(app)
-      .post(`/campaigns/${crypto.randomUUID()}/schedule`)
+      .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ scheduledAt: new Date(Date.now() - 60_000).toISOString() })
       .expect(400)
@@ -74,7 +75,7 @@ describe("POST /campaigns/:id/schedule", () => {
   it("returns 404 when the campaign does not exist", async () => {
     const user = await seedUser();
     await request(app)
-      .post(`/campaigns/${crypto.randomUUID()}/schedule`)
+      .post(`/campaigns/${uuidv4()}/schedule`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ scheduledAt: futureDate() })
       .expect(404)

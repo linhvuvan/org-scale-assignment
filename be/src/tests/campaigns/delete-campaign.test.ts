@@ -8,6 +8,7 @@ import {
   seedCampaign,
 } from "../helpers/db";
 import { makeAuthCookie } from "../helpers/auth";
+import { v4 as uuidv4 } from "uuid";
 import { getCampaignById } from "../../db/campaigns";
 import { getCampaignRecipients } from "../../db/campaignRecipients";
 
@@ -22,14 +23,14 @@ describe("DELETE /campaigns/:id", () => {
 
   it("returns 401 when no cookie is present", async () => {
     await request(app)
-      .delete(`/campaigns/${crypto.randomUUID()}`)
+      .delete(`/campaigns/${uuidv4()}`)
       .expect(401)
       .expect({ message: "unauthorized" });
   });
 
   it("returns 401 when the JWT is invalid", async () => {
     await request(app)
-      .delete(`/campaigns/${crypto.randomUUID()}`)
+      .delete(`/campaigns/${uuidv4()}`)
       .set("Cookie", "token=badtoken")
       .expect(401)
       .expect({ message: "unauthorized" });
@@ -38,7 +39,7 @@ describe("DELETE /campaigns/:id", () => {
   it("returns 404 when the campaign does not exist", async () => {
     const user = await seedUser();
     await request(app)
-      .delete(`/campaigns/${crypto.randomUUID()}`)
+      .delete(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .expect(404)
       .expect({ message: "campaign not found" });

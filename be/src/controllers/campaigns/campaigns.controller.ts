@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { z } from "zod";
 import { pipe } from "../../utils/pipe";
 import { bodyRequired, queryRequired } from "../../middleware/validate";
+import { v4 as uuidv4 } from "uuid";
 import { authRequired } from "../../middleware/auth";
 import {
   campaignRequired,
@@ -38,7 +39,7 @@ export const createCampaignHandler = async (
     async ({ ctx }) => {
       const inserted = await insertCampaignWithRecipients({
         campaign: {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           name: ctx.body.name,
           subject: ctx.body.subject,
           body: ctx.body.body,

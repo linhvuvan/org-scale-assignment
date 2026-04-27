@@ -7,6 +7,7 @@ import { env } from "../../config/env";
 import { AUTH_COOKIE, SESSION_MAX_AGE_MS } from "../../config/constants";
 import { pipe } from "../../utils/pipe";
 import { bodyRequired } from "../../middleware/validate";
+import { v4 as uuidv4 } from "uuid";
 import {
   emailAvailableRequired,
   userRequired,
@@ -28,7 +29,7 @@ export const register = async (req: Request, res: Response) => {
     async ({ ctx }) => {
       const passwordHash = await bcrypt.hashPassword(ctx.body.password);
       const inserted = await insertUser({
-        id: crypto.randomUUID(),
+        id: uuidv4(),
         email: ctx.body.email,
         name: ctx.body.name,
         passwordHash,

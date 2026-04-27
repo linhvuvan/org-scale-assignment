@@ -1,4 +1,5 @@
 import { count, desc, eq, inArray, sql } from "drizzle-orm";
+import { v4 as uuidv4 } from "uuid";
 import { db } from "../3rd-parties/drizzle";
 import {
   campaignRecipientsTable,
@@ -34,7 +35,7 @@ export const insertCampaignWithRecipients = async (payload: {
           .insert(recipientsTable)
           .values(
             newEmails.map((email) => ({
-              id: crypto.randomUUID(),
+              id: uuidv4(),
               email,
               name: email,
             })),

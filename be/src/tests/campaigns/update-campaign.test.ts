@@ -8,6 +8,7 @@ import {
   seedCampaign,
 } from "../helpers/db";
 import { makeAuthCookie } from "../helpers/auth";
+import { v4 as uuidv4 } from "uuid";
 import { getCampaignById } from "../../db/campaigns";
 
 describe("PATCH /campaigns/:id", () => {
@@ -21,14 +22,14 @@ describe("PATCH /campaigns/:id", () => {
 
   it("returns 401 when no cookie is present", async () => {
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .expect(401)
       .expect({ message: "unauthorized" });
   });
 
   it("returns 401 when the JWT is invalid", async () => {
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", "token=badtoken")
       .expect(401)
       .expect({ message: "unauthorized" });
@@ -37,7 +38,7 @@ describe("PATCH /campaigns/:id", () => {
   it("returns 400 when name is empty", async () => {
     const user = await seedUser();
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ name: "" })
       .expect(400)
@@ -49,7 +50,7 @@ describe("PATCH /campaigns/:id", () => {
   it("returns 400 when subject is empty", async () => {
     const user = await seedUser();
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ subject: "" })
       .expect(400)
@@ -61,7 +62,7 @@ describe("PATCH /campaigns/:id", () => {
   it("returns 400 when body is empty", async () => {
     const user = await seedUser();
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ body: "" })
       .expect(400)
@@ -73,7 +74,7 @@ describe("PATCH /campaigns/:id", () => {
   it("returns 400 when status is invalid", async () => {
     const user = await seedUser();
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ status: "unknown" })
       .expect(400)
@@ -85,7 +86,7 @@ describe("PATCH /campaigns/:id", () => {
   it("returns 404 when the campaign does not exist", async () => {
     const user = await seedUser();
     await request(app)
-      .patch(`/campaigns/${crypto.randomUUID()}`)
+      .patch(`/campaigns/${uuidv4()}`)
       .set("Cookie", makeAuthCookie(user.id, user.email))
       .send({ name: "New Name" })
       .expect(404)

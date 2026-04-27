@@ -1,4 +1,5 @@
 import { migrate } from "drizzle-orm/postgres-js/migrator";
+import { v4 as uuidv4 } from "uuid";
 import { db } from "../../3rd-parties/drizzle";
 import {
   campaignRecipientsTable,
@@ -23,7 +24,7 @@ export const truncateTables = async (): Promise<void> => {
 
 export const seedUser = async () =>
   insertUser({
-    id: crypto.randomUUID(),
+    id: uuidv4(),
     email: "test@example.com",
     name: "Test User",
     passwordHash: "irrelevant",
@@ -36,7 +37,7 @@ export const seedCampaign = async (
 ) =>
   insertCampaignWithRecipients({
     campaign: {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       name: "Test Campaign",
       subject: "Hello",
       body: "Body",

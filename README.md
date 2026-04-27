@@ -25,6 +25,18 @@ docker compose up -d
 | Frontend | http://localhost:5173 |
 | Backend  | http://localhost:3000 |
 
+## Seed data
+
+On first `docker compose up`, the backend automatically seeds the database with demo data:
+
+| | |
+|---|---|
+| Email | `demo@example.com` |
+| Password | `password` |
+
+5 campaigns are created (2 draft, 1 scheduled, 2 sent) with 10 recipients and realistic stats.
+To reseed, stop the stack and drop the volume: `docker compose down -v`.
+
 ## Manual setup
 
 **Backend**
@@ -92,6 +104,7 @@ Integration tests run against a real database (separate test DB configured in `d
 npm run db:generate   # generate migration files from schema changes
 npm run db:migrate    # apply pending migrations
 npm run db:push       # sync schema directly (dev only)
+npm run db:seed       # seed demo data (skips if DB is not empty)
 npm run db:studio     # open Drizzle Studio UI
 ```
 
